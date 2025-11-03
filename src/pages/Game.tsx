@@ -81,7 +81,21 @@ const Game = () => {
 
   const submitAnswer = useCallback(async () => {
     const currentQuestion = questions[currentQuestionIndex];
-    const isCorrect = userAnswer.trim().toLowerCase() === currentQuestion.answer.toLowerCase();
+    
+    // Use server-side answer verification
+    const { data: isCorrect, error } = await supabase.rpc('verify_answer', {
+      question_id: currentQuestion.id,
+      user_answer: userAnswer.trim()
+    });
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to verify answer",
+      });
+      return;
+    }
 
     if (isCorrect) {
       setScore((prev) => prev + 1);
@@ -93,7 +107,7 @@ const Game = () => {
       toast({
         variant: "destructive",
         title: "Wrong answer",
-        description: `The correct answer was: ${currentQuestion.answer}`,
+        description: "Try the next question!",
       });
     }
 

@@ -192,7 +192,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      verify_answer: {
+        Args: { question_id: string; user_answer: string }
+        Returns: boolean
+      }
     }
     Enums: {
       difficulty_level:
