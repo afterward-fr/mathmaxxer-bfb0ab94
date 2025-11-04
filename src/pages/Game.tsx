@@ -71,6 +71,7 @@ const Game = () => {
         title: "Error",
         description: "Failed to load questions",
       });
+      setLoading(false);
     }
   };
 
