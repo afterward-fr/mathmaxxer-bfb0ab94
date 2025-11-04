@@ -341,6 +341,15 @@ export type Database = {
     }
     Functions: {
       complete_game: { Args: { p_session_id: string }; Returns: Json }
+      get_questions: {
+        Args: { p_difficulty: string; p_limit?: number }
+        Returns: {
+          created_at: string
+          difficulty: string
+          id: string
+          question: string
+        }[]
+      }
       verify_answer: {
         Args: { question_id: string; user_answer: string }
         Returns: boolean

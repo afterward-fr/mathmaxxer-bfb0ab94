@@ -56,10 +56,10 @@ const Game = () => {
   const loadQuestions = async () => {
     try {
       const { data, error } = await supabase
-        .from("questions_public")
-        .select("id, question, difficulty")
-        .eq("difficulty", difficulty as any)
-        .limit(totalQuestions);
+        .rpc("get_questions", {
+          p_difficulty: difficulty,
+          p_limit: totalQuestions,
+        });
 
       if (error) throw error;
 
