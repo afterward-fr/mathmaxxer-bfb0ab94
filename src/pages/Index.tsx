@@ -189,7 +189,7 @@ const Index = () => {
             <CardContent>
               <Button onClick={() => navigate("/multiplayer")} className="w-full">
                 <Users className="w-4 h-4 mr-2" />
-                Enter Multiplayer Arena
+                Play Online
               </Button>
             </CardContent>
           </Card>
