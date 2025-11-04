@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Brain, Trophy, Clock, Zap, LogOut, User } from "lucide-react";
+import { Brain, Trophy, Clock, Zap, LogOut, User, Bug, Users } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
@@ -171,10 +171,45 @@ const Index = () => {
             </div>
 
             <Button onClick={startGame} size="lg" className="w-full">
-              Start Game
+              Start Solo Game
             </Button>
           </CardContent>
         </Card>
+
+        {/* Multiplayer and Bug Report */}
+        <div className="grid md:grid-cols-2 gap-4">
+          <Card style={{ boxShadow: "var(--shadow-game)" }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-primary" />
+                Multiplayer
+              </CardTitle>
+              <CardDescription>Challenge players worldwide</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={() => navigate("/multiplayer")} className="w-full">
+                <Users className="w-4 h-4 mr-2" />
+                Enter Multiplayer Arena
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card style={{ boxShadow: "var(--shadow-game)" }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Bug className="w-5 h-5 text-primary" />
+                Bug Report
+              </CardTitle>
+              <CardDescription>Help us improve the game</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={() => navigate("/bug-report")} variant="outline" className="w-full">
+                <Bug className="w-4 h-4 mr-2" />
+                Report a Bug
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Game Modes Info */}
         <div className="grid md:grid-cols-3 gap-4">
