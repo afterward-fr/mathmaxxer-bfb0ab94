@@ -29,6 +29,7 @@ const Game = () => {
   const [gameStarted, setGameStarted] = useState(false);
   const [gameEnded, setGameEnded] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [gameSessionId, setGameSessionId] = useState<string | null>(null);
 
   const [totalTime, totalQuestions] = timeControl.split("+").map(Number);
 
@@ -73,7 +74,41 @@ const Game = () => {
     }
   };
 
-  const startGame = () => {
+  const startGame = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "You must be logged in to play",
+      });
+      navigate("/auth");
+      return;
+    }
+
+    // Create game session
+    const { data: session, error } = await supabase
+      .from("game_sessions")
+      .insert({
+        user_id: user.id,
+        difficulty,
+        time_control: timeControl,
+        total_questions: totalQuestions,
+      })
+      .select()
+      .single();
+
+    if (error || !session) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to start game session",
+      });
+      return;
+    }
+
+    setGameSessionId(session.id);
     setGameStarted(true);
     setTimeLeft(totalTime * 60);
   };
@@ -121,25 +156,43 @@ const Game = () => {
 
   const endGame = async () => {
     setGameEnded(true);
-    const { data: { user } } = await supabase.auth.getUser();
     
-    if (user) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
+    if (!gameSessionId) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No active game session",
+      });
+      return;
+    }
 
-      if (profile) {
-        const pointsEarned = score * 10;
-        await supabase
-          .from("profiles")
-          .update({
-            iq_rating: profile.iq_rating + pointsEarned,
-            total_games: profile.total_games + 1,
-          })
-          .eq("id", user.id);
-      }
+    // Update the session score before completing
+    await supabase
+      .from("game_sessions")
+      .update({ score })
+      .eq("id", gameSessionId);
+
+    // Call secure function to complete game and update profile
+    const { data, error } = await supabase.rpc("complete_game", {
+      p_session_id: gameSessionId,
+    });
+
+    if (error) {
+      console.error("Failed to complete game:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to save game results",
+      });
+      return;
+    }
+
+    if (data && typeof data === 'object' && 'success' in data && data.success) {
+      const result = data as { success: boolean; points_earned: number; new_rating: number; total_games: number };
+      toast({
+        title: "Game Complete!",
+        description: `You earned ${result.points_earned} IQ points!`,
+      });
     }
   };
 

@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      game_sessions: {
+        Row: {
+          completed_at: string | null
+          difficulty: string
+          id: string
+          is_completed: boolean
+          score: number
+          started_at: string
+          time_control: string
+          total_questions: number
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          difficulty: string
+          id?: string
+          is_completed?: boolean
+          score?: number
+          started_at?: string
+          time_control: string
+          total_questions: number
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          difficulty?: string
+          id?: string
+          is_completed?: boolean
+          score?: number
+          started_at?: string
+          time_control?: string
+          total_questions?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       match_answers: {
         Row: {
           answered_at: string
@@ -219,6 +255,7 @@ export type Database = {
       }
     }
     Functions: {
+      complete_game: { Args: { p_session_id: string }; Returns: Json }
       verify_answer: {
         Args: { question_id: string; user_answer: string }
         Returns: boolean
