@@ -19,7 +19,7 @@ const Game = () => {
   const { toast } = useToast();
   
   const difficulty = searchParams.get("difficulty") || "beginner";
-  const timeControl = searchParams.get("timeControl") || "5+5";
+  const timeControl = (searchParams.get("timeControl") || "5+5").replace(/\s/g, "+");
   
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
