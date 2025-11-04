@@ -258,6 +258,33 @@ export type Database = {
           },
         ]
       }
+      matchmaking_queue: {
+        Row: {
+          created_at: string
+          difficulty: string
+          id: string
+          iq_rating: number
+          time_control: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          difficulty: string
+          id?: string
+          iq_rating: number
+          time_control: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          difficulty?: string
+          id?: string
+          iq_rating?: number
+          time_control?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -341,6 +368,15 @@ export type Database = {
     }
     Functions: {
       complete_game: { Args: { p_session_id: string }; Returns: Json }
+      find_match: {
+        Args: {
+          p_difficulty: string
+          p_iq_rating: number
+          p_time_control: string
+          p_user_id: string
+        }
+        Returns: string
+      }
       get_questions: {
         Args: { p_difficulty: string; p_limit?: number }
         Returns: {

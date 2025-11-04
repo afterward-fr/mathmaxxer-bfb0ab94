@@ -5,15 +5,14 @@ import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Users, Swords, Trophy, Clock } from "lucide-react";
+import { ArrowLeft, Users, Loader2, Trophy, Target } from "lucide-react";
 
-interface Match {
+interface QueueEntry {
   id: string;
+  user_id: string;
   difficulty: string;
   time_control: string;
-  status: string;
-  player1_id: string;
-  player2_id: string | null;
+  iq_rating: number;
   created_at: string;
 }
 
@@ -22,35 +21,53 @@ const Multiplayer = () => {
   const { toast } = useToast();
   const [difficulty, setDifficulty] = useState("beginner");
   const [timeControl, setTimeControl] = useState("5+5");
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [creating, setCreating] = useState(false);
+  const [inQueue, setInQueue] = useState(false);
+  const [queueCount, setQueueCount] = useState(0);
+  const [searching, setSearching] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [userRating, setUserRating] = useState(1000);
 
   useEffect(() => {
     checkAuth();
-    loadMatches();
+    loadQueueStatus();
     
-    // Subscribe to match changes
-    const channel = supabase
-      .channel('matches-changes')
+    // Subscribe to queue and match changes
+    const queueChannel = supabase
+      .channel('queue-changes')
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'matches'
+          table: 'matchmaking_queue'
         },
         () => {
-          loadMatches();
+          loadQueueStatus();
+        }
+      )
+      .subscribe();
+
+    const matchChannel = supabase
+      .channel('match-found')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'matches',
+          filter: `player1_id=eq.${userId},player2_id=eq.${userId}`
+        },
+        (payload) => {
+          handleMatchFound(payload.new.id);
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(queueChannel);
+      supabase.removeChannel(matchChannel);
     };
-  }, []);
+  }, [userId]);
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -58,93 +75,131 @@ const Multiplayer = () => {
       navigate("/auth");
     } else {
       setUserId(session.user.id);
+      
+      // Load user profile to get rating
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("iq_rating")
+        .eq("id", session.user.id)
+        .single();
+      
+      if (profile) {
+        setUserRating(profile.iq_rating);
+      }
     }
   };
 
-  const loadMatches = async () => {
+  const loadQueueStatus = async () => {
     try {
-      const { data, error } = await supabase
-        .from("matches")
-        .select("*")
-        .eq("status", "waiting")
-        .order("created_at", { ascending: false });
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-      if (error) throw error;
-      setMatches(data || []);
+      // Check if user is in queue
+      const { data: userQueue } = await supabase
+        .from("matchmaking_queue")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
+
+      setInQueue(!!userQueue);
+
+      // Get total queue count
+      const { count } = await supabase
+        .from("matchmaking_queue")
+        .select("*", { count: 'exact', head: true });
+
+      setQueueCount(count || 0);
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to load matches",
-      });
-    } finally {
-      setLoading(false);
+      console.error("Error loading queue status:", error);
     }
   };
 
-  const createMatch = async () => {
-    setCreating(true);
+  const handleMatchFound = (matchId: string) => {
+    toast({
+      title: "Match Found!",
+      description: "Starting your game...",
+    });
+    
+    setInQueue(false);
+    setSearching(false);
+    
+    // Navigate to the game
+    setTimeout(() => {
+      navigate(`/game?matchId=${matchId}&mode=multiplayer`);
+    }, 1000);
+  };
+
+  const joinQueue = async () => {
+    setSearching(true);
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { data, error } = await supabase
-        .from("matches")
+      // Add user to queue
+      const { error: queueError } = await supabase
+        .from("matchmaking_queue")
         .insert({
-          player1_id: user.id,
-          difficulty: difficulty as any,
-          time_control: timeControl as any,
-        })
-        .select()
-        .single();
+          user_id: user.id,
+          difficulty,
+          time_control: timeControl,
+          iq_rating: userRating,
+        });
 
-      if (error) throw error;
+      if (queueError) throw queueError;
+
+      setInQueue(true);
 
       toast({
-        title: "Match Created!",
-        description: "Waiting for an opponent to join...",
+        title: "Searching for Match",
+        description: "Finding an opponent with similar skill...",
       });
 
-      loadMatches();
+      // Try to find a match immediately
+      const { data: matchId } = await supabase.rpc("find_match", {
+        p_user_id: user.id,
+        p_difficulty: difficulty,
+        p_time_control: timeControl,
+        p_iq_rating: userRating,
+      });
+
+      if (matchId) {
+        handleMatchFound(matchId);
+      }
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to create match",
+        description: "Failed to join matchmaking queue",
       });
-    } finally {
-      setCreating(false);
+      setSearching(false);
     }
   };
 
-  const joinMatch = async (matchId: string) => {
+  const leaveQueue = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       const { error } = await supabase
-        .from("matches")
-        .update({
-          player2_id: user.id,
-          status: "in_progress",
-        })
-        .eq("id", matchId);
+        .from("matchmaking_queue")
+        .delete()
+        .eq("user_id", user.id);
 
       if (error) throw error;
 
-      toast({
-        title: "Joined Match!",
-        description: "Starting game...",
-      });
+      setInQueue(false);
+      setSearching(false);
 
-      // Navigate to multiplayer game
-      navigate(`/game?matchId=${matchId}&mode=multiplayer`);
+      toast({
+        title: "Left Queue",
+        description: "Matchmaking cancelled",
+      });
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to join match",
+        description: "Failed to leave queue",
       });
     }
   };
@@ -163,7 +218,7 @@ const Multiplayer = () => {
 
   return (
     <div className="min-h-screen p-4 md:p-8" style={{ background: "var(--gradient-primary)" }}>
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center gap-4">
           <Button onClick={() => navigate("/")} variant="outline" size="icon">
             <ArrowLeft className="w-5 h-5" />
@@ -173,101 +228,116 @@ const Multiplayer = () => {
               <Users className="w-8 h-8 text-primary" />
               Multiplayer Arena
             </h1>
-            <p className="text-muted-foreground">Challenge players worldwide</p>
+            <p className="text-muted-foreground">Skill-based matchmaking</p>
           </div>
         </div>
 
+        {/* User Stats Card */}
         <Card style={{ boxShadow: "var(--shadow-game)" }}>
-          <CardHeader>
-            <CardTitle>Create Match</CardTitle>
-            <CardDescription>Set up a new match and wait for an opponent</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Difficulty</label>
-                <Select value={difficulty} onValueChange={setDifficulty}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="beginner">Beginner</SelectItem>
-                    <SelectItem value="elementary">Elementary</SelectItem>
-                    <SelectItem value="intermediate">Intermediate</SelectItem>
-                    <SelectItem value="advanced">Advanced</SelectItem>
-                    <SelectItem value="expert">Expert</SelectItem>
-                    <SelectItem value="master">Master</SelectItem>
-                  </SelectContent>
-                </Select>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Trophy className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Your IQ Rating</p>
+                  <p className="text-2xl font-bold">{userRating}</p>
+                </div>
               </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Time Control</label>
-                <Select value={timeControl} onValueChange={setTimeControl}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="3+2">Blitz - 3 min / 2 questions</SelectItem>
-                    <SelectItem value="5+5">Rapid - 5 min / 5 questions</SelectItem>
-                    <SelectItem value="10+10">Classic - 10 min / 10 questions</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="text-right">
+                <p className="text-sm text-muted-foreground">Players in Queue</p>
+                <p className="text-2xl font-bold">{queueCount}</p>
               </div>
             </div>
-
-            <Button onClick={createMatch} disabled={creating} className="w-full">
-              <Swords className="w-4 h-4 mr-2" />
-              {creating ? "Creating Match..." : "Create Match"}
-            </Button>
           </CardContent>
         </Card>
 
+        {/* Matchmaking Card */}
         <Card style={{ boxShadow: "var(--shadow-game)" }}>
           <CardHeader>
-            <CardTitle>Available Matches</CardTitle>
-            <CardDescription>Join an existing match or wait for your match to fill</CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="w-5 h-5" />
+              Find Match
+            </CardTitle>
+            <CardDescription>
+              We'll pair you with opponents of similar skill level
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            {loading ? (
-              <p className="text-center text-muted-foreground py-8">Loading matches...</p>
-            ) : matches.length === 0 ? (
-              <div className="text-center py-8">
-                <Trophy className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">No matches available. Create one!</p>
-              </div>
+          <CardContent className="space-y-4">
+            {!inQueue ? (
+              <>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Difficulty</label>
+                    <Select value={difficulty} onValueChange={setDifficulty}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="beginner">Beginner</SelectItem>
+                        <SelectItem value="elementary">Elementary</SelectItem>
+                        <SelectItem value="intermediate">Intermediate</SelectItem>
+                        <SelectItem value="advanced">Advanced</SelectItem>
+                        <SelectItem value="expert">Expert</SelectItem>
+                        <SelectItem value="master">Master</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Time Control</label>
+                    <Select value={timeControl} onValueChange={setTimeControl}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="3+2">Blitz - 3 min / 2 questions</SelectItem>
+                        <SelectItem value="5+5">Rapid - 5 min / 5 questions</SelectItem>
+                        <SelectItem value="10+10">Classic - 10 min / 10 questions</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <Button onClick={joinQueue} disabled={searching} className="w-full" size="lg">
+                  <Users className="w-4 h-4 mr-2" />
+                  Find Match
+                </Button>
+              </>
             ) : (
-              <div className="space-y-3">
-                {matches.map((match) => (
-                  <Card key={match.id} className="p-4">
-                    <div className="flex justify-between items-center">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <Swords className="w-5 h-5 text-primary" />
-                          <span className="font-semibold">{getDifficultyLabel(match.difficulty)}</span>
-                          <span className="text-muted-foreground">•</span>
-                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <Clock className="w-4 h-4" />
-                            {match.time_control}
-                          </div>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          Waiting for opponent...
-                        </p>
-                      </div>
-                      {match.player1_id !== userId && (
-                        <Button onClick={() => joinMatch(match.id)}>
-                          Join Match
-                        </Button>
-                      )}
-                      {match.player1_id === userId && (
-                        <span className="text-sm text-muted-foreground">Your match</span>
-                      )}
-                    </div>
-                  </Card>
-                ))}
+              <div className="space-y-4">
+                <div className="text-center py-8">
+                  <Loader2 className="w-16 h-16 mx-auto mb-4 text-primary animate-spin" />
+                  <h3 className="text-xl font-semibold mb-2">Searching for Opponent...</h3>
+                  <p className="text-muted-foreground mb-1">
+                    Looking for players around {userRating} IQ rating
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {getDifficultyLabel(difficulty)} • {timeControl}
+                  </p>
+                </div>
+
+                <Button onClick={leaveQueue} variant="outline" className="w-full">
+                  Cancel Search
+                </Button>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Info Card */}
+        <Card className="bg-card/50">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-3">
+              <Trophy className="w-5 h-5 text-primary mt-0.5" />
+              <div>
+                <h4 className="font-semibold mb-1">Skill-Based Matchmaking</h4>
+                <p className="text-sm text-muted-foreground">
+                  Our matchmaking system pairs you with opponents of similar IQ rating (±100 points initially, expanding if needed) to ensure fair and competitive matches.
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
