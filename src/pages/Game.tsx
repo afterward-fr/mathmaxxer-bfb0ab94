@@ -115,6 +115,16 @@ const Game = () => {
 
   const submitAnswer = useCallback(async () => {
     const currentQuestion = questions[currentQuestionIndex];
+    const { data: user } = await supabase.auth.getUser();
+    
+    if (!user?.user || !gameSessionId) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Session error",
+      });
+      return;
+    }
     
     // Use server-side answer verification
     const { data: isCorrect, error } = await supabase.rpc('verify_answer', {
@@ -129,6 +139,21 @@ const Game = () => {
         description: "Failed to verify answer",
       });
       return;
+    }
+
+    // Log answer to database for server-side score calculation
+    const { error: logError } = await supabase
+      .from("game_answers")
+      .insert({
+        game_session_id: gameSessionId,
+        question_id: currentQuestion.id,
+        user_answer: userAnswer.trim(),
+        is_correct: isCorrect,
+        user_id: user.user.id,
+      });
+
+    if (logError) {
+      console.error("Failed to log answer:", logError);
     }
 
     if (isCorrect) {
@@ -152,7 +177,7 @@ const Game = () => {
     } else {
       setCurrentQuestionIndex((prev) => prev + 1);
     }
-  }, [currentQuestionIndex, questions, userAnswer]);
+  }, [currentQuestionIndex, questions, userAnswer, gameSessionId]);
 
   const endGame = async () => {
     setGameEnded(true);
@@ -166,13 +191,7 @@ const Game = () => {
       return;
     }
 
-    // Update the session score before completing
-    await supabase
-      .from("game_sessions")
-      .update({ score })
-      .eq("id", gameSessionId);
-
-    // Call secure function to complete game and update profile
+    // Call secure function to complete game (calculates score server-side)
     const { data, error } = await supabase.rpc("complete_game", {
       p_session_id: gameSessionId,
     });
@@ -188,7 +207,10 @@ const Game = () => {
     }
 
     if (data && typeof data === 'object' && 'success' in data && data.success) {
-      const result = data as { success: boolean; points_earned: number; new_rating: number; total_games: number };
+      const result = data as { success: boolean; score: number; points_earned: number; new_rating: number; total_games: number };
+      
+      // Update local score with server-calculated value
+      setScore(result.score);
       toast({
         title: "Game Complete!",
         description: `You earned ${result.points_earned} IQ points!`,

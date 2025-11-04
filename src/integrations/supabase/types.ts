@@ -14,6 +14,58 @@ export type Database = {
   }
   public: {
     Tables: {
+      game_answers: {
+        Row: {
+          answered_at: string
+          game_session_id: string
+          id: string
+          is_correct: boolean
+          question_id: string
+          user_answer: string
+          user_id: string
+        }
+        Insert: {
+          answered_at?: string
+          game_session_id: string
+          id?: string
+          is_correct: boolean
+          question_id: string
+          user_answer: string
+          user_id: string
+        }
+        Update: {
+          answered_at?: string
+          game_session_id?: string
+          id?: string
+          is_correct?: boolean
+          question_id?: string
+          user_answer?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_answers_game_session_id_fkey"
+            columns: ["game_session_id"]
+            isOneToOne: false
+            referencedRelation: "game_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       game_sessions: {
         Row: {
           completed_at: string | null
