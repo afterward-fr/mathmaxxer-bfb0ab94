@@ -58,6 +58,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "match_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "match_answers_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -189,7 +196,27 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      questions_public: {
+        Row: {
+          created_at: string | null
+          difficulty: Database["public"]["Enums"]["difficulty_level"] | null
+          id: string | null
+          question: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          difficulty?: Database["public"]["Enums"]["difficulty_level"] | null
+          id?: string | null
+          question?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          difficulty?: Database["public"]["Enums"]["difficulty_level"] | null
+          id?: string | null
+          question?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       verify_answer: {

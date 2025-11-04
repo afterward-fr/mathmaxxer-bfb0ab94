@@ -11,7 +11,6 @@ import { Brain, Trophy, Clock } from "lucide-react";
 interface Question {
   id: string;
   question: string;
-  answer: string;
 }
 
 const Game = () => {
@@ -56,8 +55,8 @@ const Game = () => {
   const loadQuestions = async () => {
     try {
       const { data, error } = await supabase
-        .from("questions")
-        .select("*")
+        .from("questions_public")
+        .select("id, question, difficulty")
         .eq("difficulty", difficulty as any)
         .limit(totalQuestions);
 
