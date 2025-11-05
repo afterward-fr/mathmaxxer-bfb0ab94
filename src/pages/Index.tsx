@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Brain, Trophy, Clock, Zap, LogOut, User, Bug, Users, Award, Star } from "lucide-react";
+import { Brain, Trophy, Clock, Zap, LogOut, User, Bug, Users, Award, Star, Sparkles, UserPlus } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
@@ -190,6 +190,41 @@ const Index = () => {
             </Button>
           </CardContent>
         </Card>
+
+        {/* Daily Challenge and Friends */}
+        <div className="grid md:grid-cols-2 gap-4">
+          <Card style={{ boxShadow: "var(--shadow-game)" }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-primary" />
+                Daily Challenge
+              </CardTitle>
+              <CardDescription>Special rewards for both ratings</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={() => navigate("/daily-challenge")} className="w-full">
+                <Star className="w-4 h-4 mr-2" />
+                Today's Challenge
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card style={{ boxShadow: "var(--shadow-game)" }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <UserPlus className="w-5 h-5 text-primary" />
+                Friends
+              </CardTitle>
+              <CardDescription>Add friends and challenge them</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={() => navigate("/friends")} className="w-full">
+                <Users className="w-4 h-4 mr-2" />
+                Manage Friends
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Multiplayer, Leaderboard, and Bug Report */}
         <div className="grid md:grid-cols-3 gap-4">

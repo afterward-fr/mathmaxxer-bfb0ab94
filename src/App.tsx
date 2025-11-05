@@ -10,6 +10,8 @@ import BugReport from "./pages/BugReport";
 import Multiplayer from "./pages/Multiplayer";
 import Leaderboard from "./pages/Leaderboard";
 import Profile from "./pages/Profile";
+import DailyChallenge from "./pages/DailyChallenge";
+import Friends from "./pages/Friends";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +31,8 @@ const App = () => (
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/profile/:userId" element={<Profile />} />
+          <Route path="/daily-challenge" element={<DailyChallenge />} />
+          <Route path="/friends" element={<Friends />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

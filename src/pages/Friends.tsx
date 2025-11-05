@@ -1,0 +1,178 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { ArrowLeft, Users, Search, UserPlus } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import FriendsList from "@/components/FriendsList";
+import FriendRequests from "@/components/FriendRequests";
+
+const Friends = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [user, setUser] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        navigate("/auth");
+      } else {
+        setUser(session.user);
+      }
+    });
+  }, [navigate]);
+
+  const searchUsers = async () => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    setSearching(true);
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .ilike("username", `%${searchQuery}%`)
+        .neq("id", user.id)
+        .limit(10);
+
+      if (error) throw error;
+      setSearchResults(data || []);
+    } catch (error) {
+      console.error("Error searching users:", error);
+      toast({
+        title: "Error",
+        description: "Failed to search users",
+        variant: "destructive",
+      });
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const sendFriendRequest = async (friendId: string) => {
+    try {
+      const { error } = await supabase
+        .from("friendships")
+        .insert({
+          user_id: user.id,
+          friend_id: friendId,
+          status: "pending",
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Friend request sent!",
+        description: "Wait for them to accept your request",
+      });
+
+      // Remove from search results
+      setSearchResults(prev => prev.filter(u => u.id !== friendId));
+    } catch (error: any) {
+      console.error("Error sending friend request:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send friend request",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRequestUpdate = () => {
+    setRefreshKey(prev => prev + 1);
+  };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--gradient-primary)" }}>
+        <Card className="p-8">
+          <p className="text-lg">Loading...</p>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen p-4 md:p-8" style={{ background: "var(--gradient-primary)" }}>
+      <div className="max-w-6xl mx-auto space-y-6">
+        <Button onClick={() => navigate("/")} variant="outline">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Home
+        </Button>
+
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <Users className="w-6 h-6 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold">Friends</h1>
+            <p className="text-sm text-muted-foreground">Connect and challenge your friends</p>
+          </div>
+        </div>
+
+        {/* Search Users */}
+        <Card style={{ boxShadow: "var(--shadow-game)" }}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Search className="w-5 h-5" />
+              Find Friends
+            </CardTitle>
+            <CardDescription>Search for users by username</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex gap-2">
+              <Input
+                placeholder="Search username..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && searchUsers()}
+              />
+              <Button onClick={searchUsers} disabled={searching}>
+                <Search className="w-4 h-4 mr-2" />
+                Search
+              </Button>
+            </div>
+
+            {searchResults.length > 0 && (
+              <div className="space-y-2">
+                {searchResults.map((profile) => (
+                  <div
+                    key={profile.id}
+                    className="flex items-center justify-between p-4 rounded-lg bg-secondary/50"
+                  >
+                    <div>
+                      <p className="font-medium">{profile.username}</p>
+                      <p className="text-sm text-muted-foreground">
+                        IQ Rating: {profile.iq_rating}
+                      </p>
+                    </div>
+                    <Button onClick={() => sendFriendRequest(profile.id)} size="sm">
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Add Friend
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Friend Requests */}
+        <FriendRequests userId={user.id} onUpdate={handleRequestUpdate} />
+
+        {/* Friends List */}
+        <FriendsList userId={user.id} key={refreshKey} />
+      </div>
+    </div>
+  );
+};
+
+export default Friends;
