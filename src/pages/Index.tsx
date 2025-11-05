@@ -90,11 +90,18 @@ const Index = () => {
         {/* Profile Stats */}
         <Card style={{ boxShadow: "var(--shadow-game)" }}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="w-5 h-5" />
-              {profile.username}
-            </CardTitle>
-            <CardDescription>Your competitive stats</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="w-5 h-5" />
+                  {profile.username}
+                </CardTitle>
+                <CardDescription>Your competitive stats</CardDescription>
+              </div>
+              <Button onClick={() => navigate("/profile")} variant="outline" size="sm">
+                View Full Profile
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

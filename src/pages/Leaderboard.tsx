@@ -134,7 +134,12 @@ const Leaderboard = () => {
                       {getRankIcon(rank)}
                     </div>
                     <div className="col-span-4 md:col-span-3 flex items-center font-medium truncate">
-                      {entry.username}
+                      <button
+                        onClick={() => navigate(`/profile/${entry.id}`)}
+                        className="hover:text-primary transition-colors text-left"
+                      >
+                        {entry.username}
+                      </button>
                       {isCurrentUser && (
                         <span className="ml-2 text-xs text-primary font-bold">(You)</span>
                       )}

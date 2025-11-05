@@ -1,0 +1,483 @@
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Trophy, User, ArrowLeft, Calendar, TrendingUp, Target, Zap, Brain, Clock } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
+import { format } from "date-fns";
+
+interface Profile {
+  id: string;
+  username: string;
+  iq_rating: number;
+  wins: number;
+  losses: number;
+  total_games: number;
+  created_at: string;
+}
+
+interface GameSession {
+  id: string;
+  difficulty: string;
+  time_control: string;
+  score: number;
+  total_questions: number;
+  started_at: string;
+  completed_at: string;
+  is_completed: boolean;
+}
+
+interface Match {
+  id: string;
+  difficulty: string;
+  time_control: string;
+  status: string;
+  created_at: string;
+  completed_at: string;
+  player1_id: string;
+  player2_id: string;
+  player1_score: number;
+  player2_score: number;
+  winner_id: string;
+}
+
+const Profile = () => {
+  const navigate = useNavigate();
+  const { userId } = useParams();
+  const { toast } = useToast();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [gameSessions, setGameSessions] = useState<GameSession[]>([]);
+  const [matches, setMatches] = useState<Match[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadData();
+  }, [userId]);
+
+  const loadData = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate("/auth");
+        return;
+      }
+
+      const targetUserId = userId || session.user.id;
+      setCurrentUserId(session.user.id);
+
+      // Load profile
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", targetUserId)
+        .single();
+
+      if (profileError) throw profileError;
+      setProfile(profileData);
+
+      // Load game sessions
+      const { data: sessionsData, error: sessionsError } = await supabase
+        .from("game_sessions")
+        .select("*")
+        .eq("user_id", targetUserId)
+        .eq("is_completed", true)
+        .order("completed_at", { ascending: false })
+        .limit(20);
+
+      if (sessionsError) throw sessionsError;
+      setGameSessions(sessionsData || []);
+
+      // Load matches
+      const { data: matchesData, error: matchesError } = await supabase
+        .from("matches")
+        .select("*")
+        .or(`player1_id.eq.${targetUserId},player2_id.eq.${targetUserId}`)
+        .eq("status", "completed")
+        .order("completed_at", { ascending: false })
+        .limit(20);
+
+      if (matchesError) throw matchesError;
+      setMatches(matchesData || []);
+
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getPerformanceData = () => {
+    // Combine sessions and matches, sort by date
+    const allGames = [
+      ...gameSessions.map(s => ({
+        date: s.completed_at,
+        type: 'solo',
+        score: s.score,
+        total: s.total_questions,
+        accuracy: (s.score / s.total_questions) * 100
+      })),
+      ...matches.map(m => {
+        const isPlayer1 = m.player1_id === profile?.id;
+        const myScore = isPlayer1 ? m.player1_score : m.player2_score;
+        const opponentScore = isPlayer1 ? m.player2_score : m.player1_score;
+        const total = myScore + opponentScore;
+        return {
+          date: m.completed_at,
+          type: 'multiplayer',
+          score: myScore,
+          total: total > 0 ? total : 1,
+          accuracy: total > 0 ? (myScore / total) * 100 : 0
+        };
+      })
+    ]
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .slice(-10)
+    .map(game => ({
+      date: format(new Date(game.date), 'MMM dd'),
+      accuracy: Math.round(game.accuracy),
+      score: game.score
+    }));
+
+    return allGames;
+  };
+
+  const getDifficultyStats = () => {
+    const stats: Record<string, { played: number, won: number }> = {};
+    
+    gameSessions.forEach(session => {
+      if (!stats[session.difficulty]) {
+        stats[session.difficulty] = { played: 0, won: 0 };
+      }
+      stats[session.difficulty].played++;
+      if (session.score >= session.total_questions * 0.7) {
+        stats[session.difficulty].won++;
+      }
+    });
+
+    matches.forEach(match => {
+      if (!stats[match.difficulty]) {
+        stats[match.difficulty] = { played: 0, won: 0 };
+      }
+      stats[match.difficulty].played++;
+      if (match.winner_id === profile?.id) {
+        stats[match.difficulty].won++;
+      }
+    });
+
+    return Object.entries(stats).map(([difficulty, data]) => ({
+      difficulty: difficulty.charAt(0).toUpperCase() + difficulty.slice(1),
+      games: data.played,
+      winRate: data.played > 0 ? Math.round((data.won / data.played) * 100) : 0
+    }));
+  };
+
+  const getRecentActivity = () => {
+    return gameSessions.slice(0, 5);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--gradient-primary)" }}>
+        <Card className="p-8">
+          <p className="text-lg">Loading profile...</p>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--gradient-primary)" }}>
+        <Card className="p-8">
+          <p className="text-lg">Profile not found</p>
+          <Button onClick={() => navigate("/")} className="mt-4">
+            Go Home
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
+  const isOwnProfile = currentUserId === profile.id;
+  const performanceData = getPerformanceData();
+  const difficultyStats = getDifficultyStats();
+  const winRate = profile.total_games > 0 ? Math.round((profile.wins / profile.total_games) * 100) : 0;
+
+  return (
+    <div className="min-h-screen p-4 md:p-8" style={{ background: "var(--gradient-primary)" }}>
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <Button onClick={() => navigate("/")} variant="outline" size="sm">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Home
+          </Button>
+          {isOwnProfile && (
+            <Button onClick={() => navigate("/leaderboard")} variant="outline" size="sm">
+              <Trophy className="w-4 h-4 mr-2" />
+              Leaderboard
+            </Button>
+          )}
+        </div>
+
+        {/* Profile Header */}
+        <Card style={{ boxShadow: "var(--shadow-game)" }}>
+          <CardHeader>
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
+                <User className="w-8 h-8 text-primary" />
+              </div>
+              <div className="flex-1">
+                <CardTitle className="text-3xl">{profile.username}</CardTitle>
+                <CardDescription className="flex items-center gap-2 mt-1">
+                  <Calendar className="w-4 h-4" />
+                  Joined {format(new Date(profile.created_at), 'MMMM yyyy')}
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <div className="text-center p-4 rounded-lg bg-secondary/50">
+                <Trophy className="w-8 h-8 mx-auto mb-2 text-primary" />
+                <p className="text-2xl font-bold text-primary">{profile.iq_rating}</p>
+                <p className="text-sm text-muted-foreground">IQ Rating</p>
+              </div>
+              <div className="text-center p-4 rounded-lg bg-secondary/50">
+                <Zap className="w-8 h-8 mx-auto mb-2 text-primary" />
+                <p className="text-2xl font-bold">{profile.total_games}</p>
+                <p className="text-sm text-muted-foreground">Total Games</p>
+              </div>
+              <div className="text-center p-4 rounded-lg bg-secondary/50">
+                <Trophy className="w-8 h-8 mx-auto mb-2 text-green-500" />
+                <p className="text-2xl font-bold text-green-500">{profile.wins}</p>
+                <p className="text-sm text-muted-foreground">Wins</p>
+              </div>
+              <div className="text-center p-4 rounded-lg bg-secondary/50">
+                <Brain className="w-8 h-8 mx-auto mb-2 text-red-500" />
+                <p className="text-2xl font-bold text-red-500">{profile.losses}</p>
+                <p className="text-sm text-muted-foreground">Losses</p>
+              </div>
+              <div className="text-center p-4 rounded-lg bg-secondary/50">
+                <Target className="w-8 h-8 mx-auto mb-2 text-primary" />
+                <p className="text-2xl font-bold">{winRate}%</p>
+                <p className="text-sm text-muted-foreground">Win Rate</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Tabs for Statistics and History */}
+        <Tabs defaultValue="stats" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="stats">Statistics</TabsTrigger>
+            <TabsTrigger value="history">Match History</TabsTrigger>
+            <TabsTrigger value="performance">Performance</TabsTrigger>
+          </TabsList>
+
+          {/* Statistics Tab */}
+          <TabsContent value="stats" className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              {/* Performance by Difficulty */}
+              <Card style={{ boxShadow: "var(--shadow-game)" }}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Brain className="w-5 h-5 text-primary" />
+                    Performance by Difficulty
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={difficultyStats}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                      <XAxis dataKey="difficulty" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="games" fill="hsl(var(--primary))" name="Games Played" />
+                      <Bar dataKey="winRate" fill="hsl(var(--chart-2))" name="Win Rate %" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              {/* Recent Activity */}
+              <Card style={{ boxShadow: "var(--shadow-game)" }}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-primary" />
+                    Recent Solo Games
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {getRecentActivity().map((session) => (
+                      <div key={session.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
+                        <div className="flex-1">
+                          <p className="font-medium capitalize">{session.difficulty}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {format(new Date(session.completed_at), 'MMM dd, yyyy')}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-primary">
+                            {session.score}/{session.total_questions}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {Math.round((session.score / session.total_questions) * 100)}%
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                    {getRecentActivity().length === 0 && (
+                      <p className="text-center text-muted-foreground py-8">No games played yet</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Match History Tab */}
+          <TabsContent value="history" className="space-y-4">
+            <Card style={{ boxShadow: "var(--shadow-game)" }}>
+              <CardHeader>
+                <CardTitle>Multiplayer Match History</CardTitle>
+                <CardDescription>Your recent competitive matches</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {matches.map((match) => {
+                    const isPlayer1 = match.player1_id === profile.id;
+                    const myScore = isPlayer1 ? match.player1_score : match.player2_score;
+                    const opponentScore = isPlayer1 ? match.player2_score : match.player1_score;
+                    const won = match.winner_id === profile.id;
+                    const isDraw = match.winner_id === null;
+
+                    return (
+                      <div 
+                        key={match.id} 
+                        className={`p-4 rounded-lg border-2 ${
+                          won ? 'bg-green-500/10 border-green-500/50' : 
+                          isDraw ? 'bg-yellow-500/10 border-yellow-500/50' :
+                          'bg-red-500/10 border-red-500/50'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className={`font-bold ${
+                                won ? 'text-green-500' : isDraw ? 'text-yellow-500' : 'text-red-500'
+                              }`}>
+                                {won ? 'VICTORY' : isDraw ? 'DRAW' : 'DEFEAT'}
+                              </span>
+                              <span className="text-sm text-muted-foreground">•</span>
+                              <span className="text-sm capitalize">{match.difficulty}</span>
+                              <span className="text-sm text-muted-foreground">•</span>
+                              <span className="text-sm">{match.time_control}</span>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              {format(new Date(match.completed_at), 'MMM dd, yyyy HH:mm')}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-2xl font-bold">
+                              <span className={won ? 'text-green-500' : ''}>{myScore}</span>
+                              <span className="text-muted-foreground mx-2">-</span>
+                              <span className={!won && !isDraw ? 'text-red-500' : ''}>{opponentScore}</span>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {matches.length === 0 && (
+                    <p className="text-center text-muted-foreground py-8">No matches played yet</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Performance Tab */}
+          <TabsContent value="performance" className="space-y-4">
+            <Card style={{ boxShadow: "var(--shadow-game)" }}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-primary" />
+                  Accuracy Trend
+                </CardTitle>
+                <CardDescription>Your performance over the last 10 games</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {performanceData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={performanceData}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                      <XAxis dataKey="date" />
+                      <YAxis domain={[0, 100]} />
+                      <Tooltip />
+                      <Line 
+                        type="monotone" 
+                        dataKey="accuracy" 
+                        stroke="hsl(var(--primary))" 
+                        strokeWidth={3}
+                        name="Accuracy %"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className="text-center text-muted-foreground py-12">
+                    Not enough data to display performance trend. Play more games!
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card style={{ boxShadow: "var(--shadow-game)" }}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="w-5 h-5 text-primary" />
+                  Score Trend
+                </CardTitle>
+                <CardDescription>Your scores over the last 10 games</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {performanceData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={performanceData}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                      <XAxis dataKey="date" />
+                      <YAxis />
+                      <Tooltip />
+                      <Line 
+                        type="monotone" 
+                        dataKey="score" 
+                        stroke="hsl(var(--chart-2))" 
+                        strokeWidth={3}
+                        name="Score"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className="text-center text-muted-foreground py-12">
+                    Not enough data to display score trend. Play more games!
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+};
+
+export default Profile;
