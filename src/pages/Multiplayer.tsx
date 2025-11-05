@@ -241,7 +241,7 @@ const Multiplayer = () => {
                   <Trophy className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Your IQ Rating</p>
+                  <p className="text-sm text-muted-foreground">Competitive Rating</p>
                   <p className="text-2xl font-bold">{userRating}</p>
                 </div>
               </div>
@@ -261,7 +261,7 @@ const Multiplayer = () => {
               Find Match
             </CardTitle>
             <CardDescription>
-              We'll pair you with opponents of similar skill level
+              Compete for competitive IQ rating and climb the leaderboard
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

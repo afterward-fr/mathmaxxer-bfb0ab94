@@ -15,6 +15,7 @@ interface Profile {
   id: string;
   username: string;
   iq_rating: number;
+  practice_rating: number;
   wins: number;
   losses: number;
   total_games: number;
@@ -287,11 +288,16 @@ const Profile = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
               <div className="text-center p-4 rounded-lg bg-secondary/50">
                 <Trophy className="w-8 h-8 mx-auto mb-2 text-primary" />
                 <p className="text-2xl font-bold text-primary">{profile.iq_rating}</p>
-                <p className="text-sm text-muted-foreground">IQ Rating</p>
+                <p className="text-sm text-muted-foreground">Competitive Rating</p>
+              </div>
+              <div className="text-center p-4 rounded-lg bg-secondary/50">
+                <Brain className="w-8 h-8 mx-auto mb-2 text-primary" />
+                <p className="text-2xl font-bold text-primary">{profile.practice_rating}</p>
+                <p className="text-sm text-muted-foreground">Practice Rating</p>
               </div>
               <div className="text-center p-4 rounded-lg bg-secondary/50">
                 <Zap className="w-8 h-8 mx-auto mb-2 text-primary" />

@@ -324,6 +324,7 @@ export type Database = {
           id: string
           iq_rating: number
           losses: number
+          practice_rating: number
           total_games: number
           updated_at: string
           username: string
@@ -334,6 +335,7 @@ export type Database = {
           id: string
           iq_rating?: number
           losses?: number
+          practice_rating?: number
           total_games?: number
           updated_at?: string
           username: string
@@ -344,6 +346,7 @@ export type Database = {
           id?: string
           iq_rating?: number
           losses?: number
+          practice_rating?: number
           total_games?: number
           updated_at?: string
           username?: string

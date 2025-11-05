@@ -108,7 +108,12 @@ const Index = () => {
               <div className="text-center p-4 rounded-lg bg-secondary/50">
                 <Trophy className="w-8 h-8 mx-auto mb-2 text-primary" />
                 <p className="text-2xl font-bold text-primary">{profile.iq_rating}</p>
-                <p className="text-sm text-muted-foreground">IQ Rating</p>
+                <p className="text-sm text-muted-foreground">Competitive Rating</p>
+              </div>
+              <div className="text-center p-4 rounded-lg bg-secondary/50">
+                <Brain className="w-8 h-8 mx-auto mb-2 text-primary" />
+                <p className="text-2xl font-bold text-primary">{profile.practice_rating}</p>
+                <p className="text-sm text-muted-foreground">Practice Rating</p>
               </div>
               <div className="text-center p-4 rounded-lg bg-secondary/50">
                 <Zap className="w-8 h-8 mx-auto mb-2 text-primary" />
@@ -119,11 +124,6 @@ const Index = () => {
                 <Trophy className="w-8 h-8 mx-auto mb-2 text-green-500" />
                 <p className="text-2xl font-bold text-green-500">{profile.wins}</p>
                 <p className="text-sm text-muted-foreground">Wins</p>
-              </div>
-              <div className="text-center p-4 rounded-lg bg-secondary/50">
-                <Brain className="w-8 h-8 mx-auto mb-2 text-red-500" />
-                <p className="text-2xl font-bold text-red-500">{profile.losses}</p>
-                <p className="text-sm text-muted-foreground">Losses</p>
               </div>
               <button 
                 onClick={() => navigate("/profile")}
@@ -140,8 +140,8 @@ const Index = () => {
         {/* Game Setup */}
         <Card style={{ boxShadow: "var(--shadow-game)" }}>
           <CardHeader>
-            <CardTitle>Start New Game</CardTitle>
-            <CardDescription>Choose your difficulty and time control</CardDescription>
+            <CardTitle>Start Solo Game</CardTitle>
+            <CardDescription>Practice without affecting competitive rating</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">

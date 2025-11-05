@@ -210,13 +210,13 @@ const Game = () => {
     }
 
     if (data && typeof data === 'object' && 'success' in data && data.success) {
-      const result = data as { success: boolean; score: number; points_earned: number; new_rating: number; total_games: number };
+      const result = data as { success: boolean; score: number; points_earned: number; new_practice_rating: number; total_games: number };
       
       // Update local score with server-calculated value
       setScore(result.score);
       toast({
         title: "Game Complete!",
-        description: `You earned ${result.points_earned} IQ points!`,
+        description: `You earned ${result.points_earned} practice points!`,
       });
 
       // Check for achievements after game completion

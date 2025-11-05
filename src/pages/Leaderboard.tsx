@@ -102,7 +102,7 @@ const Leaderboard = () => {
               <Trophy className="w-8 h-8 text-primary" />
               Global Leaderboard
             </CardTitle>
-            <CardDescription>Top 100 players ranked by IQ rating</CardDescription>
+            <CardDescription>Top 100 players ranked by Competitive IQ rating (multiplayer only)</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -110,7 +110,7 @@ const Leaderboard = () => {
               <div className="grid grid-cols-12 gap-2 md:gap-4 p-3 text-sm font-semibold text-muted-foreground border-b">
                 <div className="col-span-1">Rank</div>
                 <div className="col-span-4 md:col-span-3">Player</div>
-                <div className="col-span-2 text-center">Rating</div>
+                <div className="col-span-2 text-center">Competitive</div>
                 <div className="col-span-2 text-center hidden md:block">Games</div>
                 <div className="col-span-2 text-center">W/L</div>
                 <div className="col-span-3 md:col-span-2 text-center">Win Rate</div>
