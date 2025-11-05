@@ -80,6 +80,66 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_challenges: {
+        Row: {
+          challenge_date: string
+          created_at: string
+          difficulty: string
+          id: string
+          reward_iq_rating: number
+          reward_practice_rating: number
+          target_score: number
+          time_control: string
+        }
+        Insert: {
+          challenge_date: string
+          created_at?: string
+          difficulty: string
+          id?: string
+          reward_iq_rating?: number
+          reward_practice_rating?: number
+          target_score: number
+          time_control: string
+        }
+        Update: {
+          challenge_date?: string
+          created_at?: string
+          difficulty?: string
+          id?: string
+          reward_iq_rating?: number
+          reward_practice_rating?: number
+          target_score?: number
+          time_control?: string
+        }
+        Relationships: []
+      }
+      friendships: {
+        Row: {
+          created_at: string
+          friend_id: string
+          id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          friend_id: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          friend_id?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       game_answers: {
         Row: {
           answered_at: string
@@ -414,6 +474,38 @@ export type Database = {
           },
         ]
       }
+      user_challenge_completions: {
+        Row: {
+          challenge_id: string
+          completed_at: string
+          id: string
+          score_achieved: number
+          user_id: string
+        }
+        Insert: {
+          challenge_id: string
+          completed_at?: string
+          id?: string
+          score_achieved: number
+          user_id: string
+        }
+        Update: {
+          challenge_id?: string
+          completed_at?: string
+          id?: string
+          score_achieved?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_challenge_completions_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "daily_challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       questions_public: {
@@ -439,6 +531,10 @@ export type Database = {
       }
     }
     Functions: {
+      complete_daily_challenge: {
+        Args: { p_challenge_id: string; p_score: number }
+        Returns: Json
+      }
       complete_game: { Args: { p_session_id: string }; Returns: Json }
       find_match: {
         Args: {
