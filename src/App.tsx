@@ -8,6 +8,7 @@ import Auth from "./pages/Auth";
 import Game from "./pages/Game";
 import BugReport from "./pages/BugReport";
 import Multiplayer from "./pages/Multiplayer";
+import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/game" element={<Game />} />
           <Route path="/bug-report" element={<BugReport />} />
           <Route path="/multiplayer" element={<Multiplayer />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

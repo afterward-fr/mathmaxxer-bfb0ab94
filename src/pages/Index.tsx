@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Brain, Trophy, Clock, Zap, LogOut, User, Bug, Users } from "lucide-react";
+import { Brain, Trophy, Clock, Zap, LogOut, User, Bug, Users, Award } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
@@ -176,8 +176,8 @@ const Index = () => {
           </CardContent>
         </Card>
 
-        {/* Multiplayer and Bug Report */}
-        <div className="grid md:grid-cols-2 gap-4">
+        {/* Multiplayer, Leaderboard, and Bug Report */}
+        <div className="grid md:grid-cols-3 gap-4">
           <Card style={{ boxShadow: "var(--shadow-game)" }}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -197,10 +197,26 @@ const Index = () => {
           <Card style={{ boxShadow: "var(--shadow-game)" }}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
+                <Award className="w-5 h-5 text-primary" />
+                Leaderboard
+              </CardTitle>
+              <CardDescription>See top players ranked</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={() => navigate("/leaderboard")} variant="outline" className="w-full">
+                <Trophy className="w-4 h-4 mr-2" />
+                View Rankings
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card style={{ boxShadow: "var(--shadow-game)" }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
                 <Bug className="w-5 h-5 text-primary" />
                 Bug Report
               </CardTitle>
-              <CardDescription>Help us improve the game</CardDescription>
+              <CardDescription>Help us improve</CardDescription>
             </CardHeader>
             <CardContent>
               <Button onClick={() => navigate("/bug-report")} variant="outline" className="w-full">
