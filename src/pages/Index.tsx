@@ -137,57 +137,27 @@ const Index = () => {
           </CardContent>
         </Card>
 
-        {/* Game Setup */}
+        {/* Multiplayer Setup */}
         <Card style={{ boxShadow: "var(--shadow-game)" }}>
           <CardHeader>
-            <CardTitle>Start Solo Game</CardTitle>
-            <CardDescription>Practice without affecting competitive rating</CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="w-5 h-5 text-primary" />
+              Multiplayer
+            </CardTitle>
+            <CardDescription>Compete for competitive IQ rating and climb the leaderboard</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <label className="text-sm font-medium flex items-center gap-2">
-                  <Brain className="w-4 h-4" />
-                  Difficulty Level
-                </label>
-                <Select value={difficulty} onValueChange={setDifficulty}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="beginner">Beginner - Basic Arithmetic</SelectItem>
-                    <SelectItem value="elementary">Elementary - Simple Multiplication</SelectItem>
-                    <SelectItem value="intermediate">Intermediate - Mixed Operations</SelectItem>
-                    <SelectItem value="advanced">Advanced - Algebra Basics</SelectItem>
-                    <SelectItem value="expert">Expert - Geometry & Roots</SelectItem>
-                    <SelectItem value="master">Master - Complex Problems</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-3">
-                <label className="text-sm font-medium flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  Time Control
-                </label>
-                <Select value={timeControl} onValueChange={setTimeControl}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="3+2">Blitz - 3 min / 2 questions</SelectItem>
-                    <SelectItem value="5+5">Rapid - 5 min / 5 questions</SelectItem>
-                    <SelectItem value="10+10">Classic - 10 min / 10 questions</SelectItem>
-                    <SelectItem value="15+15">Extended - 15 min / 15 questions</SelectItem>
-                    <SelectItem value="30+30">Marathon - 30 min / 30 questions</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+          <CardContent className="space-y-4">
+            <div className="text-center py-4">
+              <Trophy className="w-16 h-16 mx-auto mb-4 text-primary" />
+              <h3 className="text-xl font-bold mb-2">Challenge Players Worldwide</h3>
+              <p className="text-sm text-muted-foreground mb-6">
+                Compete in real-time matches and earn competitive rating points
+              </p>
+              <Button onClick={() => navigate("/multiplayer")} size="lg" className="w-full">
+                <Users className="w-4 h-4 mr-2" />
+                Play Multiplayer
+              </Button>
             </div>
-
-            <Button onClick={startGame} size="lg" className="w-full">
-              Start Solo Game
-            </Button>
           </CardContent>
         </Card>
 
@@ -226,20 +196,20 @@ const Index = () => {
           </Card>
         </div>
 
-        {/* Multiplayer, Leaderboard, and Bug Report */}
+        {/* Solo Game, Leaderboard, and Bug Report */}
         <div className="grid md:grid-cols-3 gap-4">
           <Card style={{ boxShadow: "var(--shadow-game)" }}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-primary" />
-                Multiplayer
+                <Brain className="w-5 h-5 text-primary" />
+                Solo Practice
               </CardTitle>
-              <CardDescription>Challenge players worldwide</CardDescription>
+              <CardDescription>Practice without affecting competitive rating</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button onClick={() => navigate("/multiplayer")} className="w-full">
-                <Users className="w-4 h-4 mr-2" />
-                Play Online
+              <Button onClick={startGame} className="w-full">
+                <Brain className="w-4 h-4 mr-2" />
+                Start Solo Game
               </Button>
             </CardContent>
           </Card>
