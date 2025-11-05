@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Brain, Trophy, Clock } from "lucide-react";
+import { useAchievements } from "@/hooks/useAchievements";
 
 interface Question {
   id: string;
@@ -30,6 +31,7 @@ const Game = () => {
   const [gameEnded, setGameEnded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [gameSessionId, setGameSessionId] = useState<string | null>(null);
+  const { checkAndAwardAchievements } = useAchievements();
 
   const [totalTime, totalQuestions] = timeControl.split("+").map(Number);
 
@@ -216,6 +218,41 @@ const Game = () => {
         title: "Game Complete!",
         description: `You earned ${result.points_earned} IQ points!`,
       });
+
+      // Check for achievements after game completion
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+
+        const { data: sessions } = await supabase
+          .from("game_sessions")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("is_completed", true)
+          .order("completed_at", { ascending: false })
+          .limit(20);
+
+        const { data: matches } = await supabase
+          .from("matches")
+          .select("*")
+          .or(`player1_id.eq.${user.id},player2_id.eq.${user.id}`)
+          .eq("status", "completed")
+          .order("completed_at", { ascending: false })
+          .limit(20);
+
+        if (profile) {
+          await checkAndAwardAchievements({
+            userId: user.id,
+            profile,
+            gameSessions: sessions || [],
+            matches: matches || [],
+          });
+        }
+      }
     }
   };
 

@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Brain, Trophy, Clock, Zap, LogOut, User, Bug, Users, Award } from "lucide-react";
+import { Brain, Trophy, Clock, Zap, LogOut, User, Bug, Users, Award, Star } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
@@ -104,7 +104,7 @@ const Index = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="text-center p-4 rounded-lg bg-secondary/50">
                 <Trophy className="w-8 h-8 mx-auto mb-2 text-primary" />
                 <p className="text-2xl font-bold text-primary">{profile.iq_rating}</p>
@@ -116,15 +116,23 @@ const Index = () => {
                 <p className="text-sm text-muted-foreground">Games Played</p>
               </div>
               <div className="text-center p-4 rounded-lg bg-secondary/50">
-                <Trophy className="w-8 h-8 mx-auto mb-2 text-primary" />
-                <p className="text-2xl font-bold">{profile.wins}</p>
+                <Trophy className="w-8 h-8 mx-auto mb-2 text-green-500" />
+                <p className="text-2xl font-bold text-green-500">{profile.wins}</p>
                 <p className="text-sm text-muted-foreground">Wins</p>
               </div>
               <div className="text-center p-4 rounded-lg bg-secondary/50">
-                <Brain className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-2xl font-bold">{profile.losses}</p>
+                <Brain className="w-8 h-8 mx-auto mb-2 text-red-500" />
+                <p className="text-2xl font-bold text-red-500">{profile.losses}</p>
                 <p className="text-sm text-muted-foreground">Losses</p>
               </div>
+              <button 
+                onClick={() => navigate("/profile")}
+                className="text-center p-4 rounded-lg bg-primary/10 hover:bg-primary/20 transition-all"
+              >
+                <Star className="w-8 h-8 mx-auto mb-2 text-primary" />
+                <p className="text-2xl font-bold">View</p>
+                <p className="text-sm text-muted-foreground">Achievements</p>
+              </button>
             </div>
           </CardContent>
         </Card>

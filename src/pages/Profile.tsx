@@ -4,10 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, User, ArrowLeft, Calendar, TrendingUp, Target, Zap, Brain, Clock } from "lucide-react";
+import { Trophy, User, ArrowLeft, Calendar, TrendingUp, Target, Zap, Brain, Clock, Award } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { format } from "date-fns";
+import AchievementBadge from "@/components/AchievementBadge";
+import { useAchievements } from "@/hooks/useAchievements";
 
 interface Profile {
   id: string;
@@ -53,6 +55,9 @@ const Profile = () => {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [achievements, setAchievements] = useState<any[]>([]);
+  const [userAchievements, setUserAchievements] = useState<any[]>([]);
+  const { checkAndAwardAchievements } = useAchievements();
 
   useEffect(() => {
     loadData();
@@ -102,6 +107,34 @@ const Profile = () => {
 
       if (matchesError) throw matchesError;
       setMatches(matchesData || []);
+
+      // Load achievements
+      const { data: achievementsData, error: achievementsError } = await supabase
+        .from("achievements")
+        .select("*")
+        .order("category", { ascending: true });
+
+      if (achievementsError) throw achievementsError;
+      setAchievements(achievementsData || []);
+
+      // Load user achievements
+      const { data: userAchievementsData, error: userAchievementsError } = await supabase
+        .from("user_achievements")
+        .select("*, achievements(*)")
+        .eq("user_id", targetUserId);
+
+      if (userAchievementsError) throw userAchievementsError;
+      setUserAchievements(userAchievementsData || []);
+
+      // Check for new achievements if viewing own profile
+      if (targetUserId === session.user.id && profileData) {
+        await checkAndAwardAchievements({
+          userId: targetUserId,
+          profile: profileData,
+          gameSessions: sessionsData || [],
+          matches: matchesData || [],
+        });
+      }
 
     } catch (error: any) {
       toast({
@@ -210,6 +243,15 @@ const Profile = () => {
   const performanceData = getPerformanceData();
   const difficultyStats = getDifficultyStats();
   const winRate = profile.total_games > 0 ? Math.round((profile.wins / profile.total_games) * 100) : 0;
+  
+  const unlockedAchievementIds = new Set(userAchievements.map((ua) => ua.achievement_id));
+  const achievementsByCategory = achievements.reduce((acc, achievement) => {
+    if (!acc[achievement.category]) {
+      acc[achievement.category] = [];
+    }
+    acc[achievement.category].push(achievement);
+    return acc;
+  }, {} as Record<string, any[]>);
 
   return (
     <div className="min-h-screen p-4 md:p-8" style={{ background: "var(--gradient-primary)" }}>
@@ -276,12 +318,54 @@ const Profile = () => {
         </Card>
 
         {/* Tabs for Statistics and History */}
-        <Tabs defaultValue="stats" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3">
+        <Tabs defaultValue="achievements" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="achievements">Achievements</TabsTrigger>
             <TabsTrigger value="stats">Statistics</TabsTrigger>
             <TabsTrigger value="history">Match History</TabsTrigger>
             <TabsTrigger value="performance">Performance</TabsTrigger>
           </TabsList>
+
+          {/* Achievements Tab */}
+          <TabsContent value="achievements" className="space-y-4">
+            <Card style={{ boxShadow: "var(--shadow-game)" }}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Award className="w-5 h-5 text-primary" />
+                  Achievements ({userAchievements.length}/{achievements.length})
+                </CardTitle>
+                <CardDescription>
+                  Unlock achievements by reaching milestones
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {Object.entries(achievementsByCategory).map(([category, categoryAchievements]: [string, any[]]) => (
+                  <div key={category}>
+                    <h3 className="text-lg font-semibold mb-3 capitalize">
+                      {category.replace(/_/g, " ")}
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {categoryAchievements.map((achievement) => {
+                        const userAchievement = userAchievements.find(
+                          (ua) => ua.achievement_id === achievement.id
+                        );
+                        return (
+                          <AchievementBadge
+                            key={achievement.id}
+                            achievement={{
+                              ...achievement,
+                              unlocked_at: userAchievement?.unlocked_at,
+                            }}
+                            unlocked={unlockedAchievementIds.has(achievement.id)}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           {/* Statistics Tab */}
           <TabsContent value="stats" className="space-y-4">
