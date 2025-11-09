@@ -8,11 +8,14 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Brain, Trophy, Clock } from "lucide-react";
 import { useAchievements } from "@/hooks/useAchievements";
+import { z } from "zod";
 
 interface Question {
   id: string;
   question: string;
 }
+
+const answerSchema = z.string().trim().min(1, "Answer cannot be empty").max(200, "Answer must be less than 200 characters");
 
 const Game = () => {
   const [searchParams] = useSearchParams();
@@ -128,19 +131,40 @@ const Game = () => {
       });
       return;
     }
+
+    // Validate answer input
+    const validation = answerSchema.safeParse(userAnswer.trim());
+    
+    if (!validation.success) {
+      toast({
+        title: "Invalid Answer",
+        description: validation.error.errors[0].message,
+        variant: "destructive",
+      });
+      return;
+    }
     
     // Use server-side answer verification
     const { data: isCorrect, error } = await supabase.rpc('verify_answer', {
       question_id: currentQuestion.id,
-      user_answer: userAnswer.trim()
+      user_answer: validation.data
     });
 
     if (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to verify answer",
-      });
+      // Handle rate limit error specifically
+      if (error.message.includes('Rate limit exceeded')) {
+        toast({
+          title: "Too Many Attempts",
+          description: "Please wait a minute before trying again",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to verify answer",
+          variant: "destructive",
+        });
+      }
       return;
     }
 

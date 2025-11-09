@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Bug, Send } from "lucide-react";
+import { z } from "zod";
 
 interface BugReport {
   id: string;
@@ -17,6 +18,12 @@ interface BugReport {
   priority: string;
   created_at: string;
 }
+
+const bugReportSchema = z.object({
+  title: z.string().trim().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
+  description: z.string().trim().min(10, "Description must be at least 10 characters").max(2000, "Description must be less than 2000 characters"),
+  priority: z.enum(["low", "medium", "high"], { required_error: "Please select a priority" })
+});
 
 const BugReport = () => {
   const navigate = useNavigate();
@@ -63,11 +70,19 @@ const BugReport = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!title.trim() || !description.trim()) {
+    // Validate input with zod
+    const validation = bugReportSchema.safeParse({
+      title: title.trim(),
+      description: description.trim(),
+      priority
+    });
+
+    if (!validation.success) {
+      const errors = validation.error.errors.map(e => e.message).join(", ");
       toast({
+        title: "Validation Error",
+        description: errors,
         variant: "destructive",
-        title: "Error",
-        description: "Please fill in all fields",
       });
       return;
     }

@@ -8,6 +8,9 @@ import { ArrowLeft, Users, Search, UserPlus } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import FriendsList from "@/components/FriendsList";
 import FriendRequests from "@/components/FriendRequests";
+import { z } from "zod";
+
+const searchQuerySchema = z.string().trim().min(1, "Search query cannot be empty").max(50, "Search query must be less than 50 characters");
 
 const Friends = () => {
   const navigate = useNavigate();
@@ -29,8 +32,15 @@ const Friends = () => {
   }, [navigate]);
 
   const searchUsers = async () => {
-    if (!searchQuery.trim()) {
-      setSearchResults([]);
+    // Validate search query
+    const validation = searchQuerySchema.safeParse(searchQuery.trim());
+    
+    if (!validation.success) {
+      toast({
+        title: "Invalid Search",
+        description: validation.error.errors[0].message,
+        variant: "destructive",
+      });
       return;
     }
 

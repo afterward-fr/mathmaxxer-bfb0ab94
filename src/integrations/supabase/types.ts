@@ -47,6 +47,27 @@ export type Database = {
         }
         Relationships: []
       }
+      answer_verification_attempts: {
+        Row: {
+          attempted_at: string
+          id: string
+          question_id: string
+          user_id: string
+        }
+        Insert: {
+          attempted_at?: string
+          id?: string
+          question_id: string
+          user_id: string
+        }
+        Update: {
+          attempted_at?: string
+          id?: string
+          question_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       bug_reports: {
         Row: {
           created_at: string
