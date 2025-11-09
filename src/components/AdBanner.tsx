@@ -7,12 +7,18 @@ interface AdBannerProps {
 const AdBanner = ({ className = "" }: AdBannerProps) => {
   useEffect(() => {
     try {
-      // Initialize AdMob banner ad
-      if (window.adsbygoogle && !window.adsbygoogle.loaded) {
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-      }
+      // Push ad after a short delay to ensure script is loaded
+      const timer = setTimeout(() => {
+        if (window.adsbygoogle) {
+          (window.adsbygoogle = window.adsbygoogle || []).push({});
+        }
+      }, 100);
+
+      return () => clearTimeout(timer);
     } catch (error) {
-      console.error("Ad initialization error:", error);
+      if (import.meta.env.DEV) {
+        console.error("Ad initialization error:", error);
+      }
     }
   }, []);
 

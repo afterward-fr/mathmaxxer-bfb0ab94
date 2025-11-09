@@ -43,7 +43,7 @@ const DailyChallenge = () => {
         .from("daily_challenges")
         .select("*")
         .eq("challenge_date", new Date().toISOString().split('T')[0])
-        .single();
+        .maybeSingle();
 
       if (challengeError) throw challengeError;
 
@@ -56,12 +56,14 @@ const DailyChallenge = () => {
           .select("*")
           .eq("user_id", userId)
           .eq("challenge_id", challengeData.id)
-          .single();
+          .maybeSingle();
 
         setCompleted(!!completionData);
       }
     } catch (error) {
-      console.error("Error loading challenge:", error);
+      if (import.meta.env.DEV) {
+        console.error("Error loading challenge:", error);
+      }
       toast({
         title: "Error",
         description: "Failed to load daily challenge",
@@ -110,19 +112,29 @@ const DailyChallenge = () => {
 
   if (!challenge) {
     return (
-      <div className="min-h-screen p-4 md:p-8" style={{ background: "var(--gradient-primary)" }}>
-        <div className="max-w-4xl mx-auto">
-          <Button onClick={() => navigate("/")} variant="outline" className="mb-6">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
-          </Button>
-          <Card>
-            <CardContent className="text-center py-12">
-              <p className="text-lg text-muted-foreground">No daily challenge available</p>
-            </CardContent>
-          </Card>
+      <>
+        <InterstitialAd 
+          isOpen={showInterstitialAd} 
+          onClose={() => setShowInterstitialAd(false)}
+          autoCloseDelay={5000}
+        />
+        
+        <div className="min-h-screen p-4 md:p-8" style={{ background: "var(--gradient-primary)" }}>
+          <div className="max-w-4xl mx-auto">
+            <Button onClick={() => navigate("/")} variant="outline" className="mb-6">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Home
+            </Button>
+            <Card>
+              <CardContent className="text-center py-12 space-y-4">
+                <Brain className="w-16 h-16 mx-auto text-muted-foreground" />
+                <p className="text-lg text-muted-foreground">No daily challenge available today</p>
+                <p className="text-sm text-muted-foreground">Check back later or play a regular game!</p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 

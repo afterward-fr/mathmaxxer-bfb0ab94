@@ -16,23 +16,28 @@ const InterstitialAd = ({ isOpen, onClose, autoCloseDelay = 5000 }: Interstitial
     if (isOpen) {
       setShowCloseButton(false);
       
-      // Initialize ad when dialog opens
-      try {
-        if (window.adsbygoogle) {
-          (window.adsbygoogle = window.adsbygoogle || []).push({});
+      // Initialize ad when dialog opens with a delay
+      const adTimer = setTimeout(() => {
+        try {
+          if (window.adsbygoogle) {
+            (window.adsbygoogle = window.adsbygoogle || []).push({});
+          }
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error("Ad initialization error:", error);
+          }
         }
-      } catch (error) {
-        if (import.meta.env.DEV) {
-          console.error("Ad initialization error:", error);
-        }
-      }
+      }, 100);
 
       // Show close button after delay
-      const timer = setTimeout(() => {
+      const closeTimer = setTimeout(() => {
         setShowCloseButton(true);
       }, autoCloseDelay);
 
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(adTimer);
+        clearTimeout(closeTimer);
+      };
     }
   }, [isOpen, autoCloseDelay]);
 
