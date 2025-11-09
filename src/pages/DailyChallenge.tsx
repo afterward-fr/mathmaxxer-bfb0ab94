@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Brain, Trophy, Clock, ArrowLeft, Star, Zap } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import AdBanner from "@/components/AdBanner";
+import InterstitialAd from "@/components/InterstitialAd";
 
 const DailyChallenge = () => {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ const DailyChallenge = () => {
   const [challenge, setChallenge] = useState<any>(null);
   const [completed, setCompleted] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showInterstitialAd, setShowInterstitialAd] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -24,6 +26,14 @@ const DailyChallenge = () => {
         loadChallenge(session.user.id);
       }
     });
+    
+    // Check if user just completed a challenge (from URL param)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('completed') === 'true') {
+      setShowInterstitialAd(true);
+      // Clean up URL
+      window.history.replaceState({}, '', '/daily-challenge');
+    }
   }, [navigate]);
 
   const loadChallenge = async (userId: string) => {
@@ -117,12 +127,19 @@ const DailyChallenge = () => {
   }
 
   return (
-    <div className="min-h-screen p-4 md:p-8" style={{ background: "var(--gradient-primary)" }}>
-      <div className="max-w-4xl mx-auto space-y-6">
-        <Button onClick={() => navigate("/")} variant="outline">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Home
-        </Button>
+    <>
+      <InterstitialAd 
+        isOpen={showInterstitialAd} 
+        onClose={() => setShowInterstitialAd(false)}
+        autoCloseDelay={5000}
+      />
+      
+      <div className="min-h-screen p-4 md:p-8" style={{ background: "var(--gradient-primary)" }}>
+        <div className="max-w-4xl mx-auto space-y-6">
+          <Button onClick={() => navigate("/")} variant="outline">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Home
+          </Button>
 
         <Card style={{ boxShadow: "var(--shadow-game)" }}>
           <CardHeader className="text-center">
@@ -213,6 +230,7 @@ const DailyChallenge = () => {
         <AdBanner />
       </div>
     </div>
+    </>
   );
 };
 
