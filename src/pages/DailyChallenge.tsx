@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Brain, Trophy, Clock, ArrowLeft, Star, Zap } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import AdBanner from "@/components/AdBanner";
 
 const DailyChallenge = () => {
   const navigate = useNavigate();
@@ -207,6 +208,9 @@ const DailyChallenge = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Ad Banner */}
+        <AdBanner />
       </div>
     </div>
   );

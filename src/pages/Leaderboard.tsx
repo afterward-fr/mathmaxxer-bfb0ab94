@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy, Medal, Award, ArrowLeft, Crown } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import AdBanner from "@/components/AdBanner";
 
 interface LeaderboardEntry {
   id: string;
@@ -198,6 +199,9 @@ const Leaderboard = () => {
             </p>
           </Card>
         </div>
+
+        {/* Ad Banner */}
+        <AdBanner />
       </div>
     </div>
   );

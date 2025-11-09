@@ -10,6 +10,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { format } from "date-fns";
 import AchievementBadge from "@/components/AchievementBadge";
 import { useAchievements } from "@/hooks/useAchievements";
+import AdBanner from "@/components/AdBanner";
 
 interface Profile {
   id: string;
@@ -565,6 +566,9 @@ const Profile = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Ad Banner */}
+        <AdBanner />
       </div>
     </div>
   );
