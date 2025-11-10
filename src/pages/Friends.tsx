@@ -8,6 +8,7 @@ import { ArrowLeft, Users, Search, UserPlus } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import FriendsList from "@/components/FriendsList";
 import FriendRequests from "@/components/FriendRequests";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { z } from "zod";
 
 const searchQuerySchema = z.string().trim().min(1, "Search query cannot be empty").max(50, "Search query must be less than 50 characters");
@@ -158,11 +159,19 @@ const Friends = () => {
                     key={profile.id}
                     className="flex items-center justify-between p-4 rounded-lg bg-secondary/50"
                   >
-                    <div>
-                      <p className="font-medium">{profile.username}</p>
-                      <p className="text-sm text-muted-foreground">
-                        IQ Rating: {profile.iq_rating}
-                      </p>
+                    <div className="flex items-center gap-3">
+                      <Avatar className="w-10 h-10 border-2 border-primary/20">
+                        <AvatarImage src={profile.avatar_url || undefined} alt={profile.username} />
+                        <AvatarFallback className="bg-primary/10">
+                          {profile.username.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">{profile.username}</p>
+                        <p className="text-sm text-muted-foreground">
+                          IQ Rating: {profile.iq_rating}
+                        </p>
+                      </div>
                     </div>
                     <Button onClick={() => sendFriendRequest(profile.id)} size="sm">
                       <UserPlus className="w-4 h-4 mr-2" />

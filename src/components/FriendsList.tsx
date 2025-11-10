@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Swords, Trash2, User } from "lucide-react";
+import { Users, Swords, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,8 +38,8 @@ const FriendsList = ({ userId }: FriendsListProps) => {
         .from("friendships")
         .select(`
           *,
-          friend:friend_id (id, username, iq_rating, practice_rating),
-          requester:user_id (id, username, iq_rating, practice_rating)
+          friend:friend_id (id, username, iq_rating, practice_rating, avatar_url),
+          requester:user_id (id, username, iq_rating, practice_rating, avatar_url)
         `)
         .eq("status", "accepted")
         .or(`user_id.eq.${userId},friend_id.eq.${userId}`);
@@ -128,9 +129,12 @@ const FriendsList = ({ userId }: FriendsListProps) => {
                   className="flex items-center justify-between p-4 rounded-lg bg-secondary/50"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <User className="w-5 h-5 text-primary" />
-                    </div>
+                    <Avatar className="w-10 h-10 border-2 border-primary/20">
+                      <AvatarImage src={profile.avatar_url || undefined} alt={profile.username} />
+                      <AvatarFallback className="bg-primary/10">
+                        {profile.username.slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
                     <div>
                       <p className="font-medium">{profile.username}</p>
                       <p className="text-sm text-muted-foreground">

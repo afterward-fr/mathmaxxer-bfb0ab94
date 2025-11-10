@@ -401,6 +401,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string
           id: string
           iq_rating: number
@@ -412,6 +413,7 @@ export type Database = {
           wins: number
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
           id: string
           iq_rating?: number
@@ -423,6 +425,7 @@ export type Database = {
           wins?: number
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
           id?: string
           iq_rating?: number

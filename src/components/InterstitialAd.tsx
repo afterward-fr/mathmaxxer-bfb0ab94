@@ -68,8 +68,8 @@ const InterstitialAd = ({ isOpen, onClose, autoCloseDelay = 5000 }: Interstitial
                 maxWidth: "728px",
                 width: "100%"
               }}
-              data-ad-client="ca-pub-3360254355574194"
-              data-ad-slot="6691058127"
+              data-ad-client="ca-pub-4537661693233495"
+              data-ad-slot="4851115421"
               data-ad-format="auto"
               data-full-width-responsive="true"
             />

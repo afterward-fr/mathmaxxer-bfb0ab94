@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Brain, Trophy, Clock, Zap, LogOut, User, Bug, Users, Award, Star, Sparkles, UserPlus } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import AdBanner from "@/components/AdBanner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -92,12 +93,19 @@ const Index = () => {
         <Card style={{ boxShadow: "var(--shadow-game)" }}>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="w-5 h-5" />
-                  {profile.username}
-                </CardTitle>
-                <CardDescription>Your competitive stats</CardDescription>
+              <div className="flex items-center gap-3">
+                <Avatar className="w-12 h-12 border-2 border-primary/20">
+                  <AvatarImage src={profile.avatar_url || undefined} alt={profile.username} />
+                  <AvatarFallback className="bg-primary/10">
+                    {profile.username.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    {profile.username}
+                  </CardTitle>
+                  <CardDescription>Your competitive stats</CardDescription>
+                </div>
               </div>
               <Button onClick={() => navigate("/profile")} variant="outline" size="sm">
                 View Full Profile
@@ -223,10 +231,14 @@ const Index = () => {
               </CardTitle>
               <CardDescription>See top players ranked</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-2">
               <Button onClick={() => navigate("/leaderboard")} variant="outline" className="w-full">
                 <Trophy className="w-4 h-4 mr-2" />
                 View Rankings
+              </Button>
+              <Button onClick={() => navigate("/friends")} variant="glow" className="w-full">
+                <UserPlus className="w-4 h-4 mr-2" />
+                Add Friend
               </Button>
             </CardContent>
           </Card>

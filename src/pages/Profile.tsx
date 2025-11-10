@@ -11,6 +11,8 @@ import { format } from "date-fns";
 import AchievementBadge from "@/components/AchievementBadge";
 import { useAchievements } from "@/hooks/useAchievements";
 import AdBanner from "@/components/AdBanner";
+import ProfilePictureUpload from "@/components/ProfilePictureUpload";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface Profile {
   id: string;
@@ -21,6 +23,7 @@ interface Profile {
   losses: number;
   total_games: number;
   created_at: string;
+  avatar_url?: string | null;
 }
 
 interface GameSession {
@@ -276,9 +279,12 @@ const Profile = () => {
         <Card style={{ boxShadow: "var(--shadow-game)" }}>
           <CardHeader>
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
-                <User className="w-8 h-8 text-primary" />
-              </div>
+              <Avatar className="w-16 h-16 border-2 border-primary/20">
+                <AvatarImage src={profile.avatar_url || undefined} alt={profile.username} />
+                <AvatarFallback className="text-xl bg-primary/10">
+                  {profile.username.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
               <div className="flex-1">
                 <CardTitle className="text-3xl">{profile.username}</CardTitle>
                 <CardDescription className="flex items-center gap-2 mt-1">
@@ -323,6 +329,16 @@ const Profile = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Profile Picture Upload - Only for own profile */}
+        {isOwnProfile && (
+          <ProfilePictureUpload
+            userId={profile.id}
+            currentAvatarUrl={profile.avatar_url}
+            username={profile.username}
+            onUploadSuccess={(url) => setProfile({ ...profile, avatar_url: url })}
+          />
+        )}
 
         {/* Tabs for Statistics and History */}
         <Tabs defaultValue="achievements" className="space-y-4">
