@@ -13,6 +13,9 @@ import Leaderboard from "./pages/Leaderboard";
 import Profile from "./pages/Profile";
 import DailyChallenge from "./pages/DailyChallenge";
 import Friends from "./pages/Friends";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import InterstitialAd from "./components/InterstitialAd";
 
@@ -49,6 +52,9 @@ const RouteListener = () => {
         <Route path="/profile/:userId" element={<Profile />} />
         <Route path="/daily-challenge" element={<DailyChallenge />} />
         <Route path="/friends" element={<Friends />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
