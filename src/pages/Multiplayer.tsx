@@ -31,7 +31,7 @@ const Multiplayer = () => {
     checkAuth();
     loadQueueStatus();
     
-    // Subscribe to queue and match changes
+    // Subscribe to queue changes
     const queueChannel = supabase
       .channel('queue-changes')
       .on(
@@ -47,15 +47,36 @@ const Multiplayer = () => {
       )
       .subscribe();
 
+    return () => {
+      supabase.removeChannel(queueChannel);
+    };
+  }, []);
+
+  // Separate effect for match detection that depends on userId
+  useEffect(() => {
+    if (!userId) return;
+
     const matchChannel = supabase
-      .channel('match-found')
+      .channel(`match-found-${userId}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
           table: 'matches',
-          filter: `player1_id=eq.${userId},player2_id=eq.${userId}`
+          filter: `player1_id=eq.${userId}`
+        },
+        (payload) => {
+          handleMatchFound(payload.new.id);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'matches',
+          filter: `player2_id=eq.${userId}`
         },
         (payload) => {
           handleMatchFound(payload.new.id);
@@ -64,7 +85,6 @@ const Multiplayer = () => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(queueChannel);
       supabase.removeChannel(matchChannel);
     };
   }, [userId]);
