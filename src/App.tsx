@@ -18,6 +18,7 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import InterstitialAd from "./components/InterstitialAd";
+import BannerAd from "./components/BannerAd";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,7 @@ const RouteListener = () => {
         onClose={() => setShowInterstitialAd(false)}
         autoCloseDelay={5000}
       />
+      <BannerAd />
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
