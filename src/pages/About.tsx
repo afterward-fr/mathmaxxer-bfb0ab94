@@ -8,7 +8,7 @@ const About = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-4 flex items-center gap-4">
           <Button
             variant="ghost"
             onClick={() => navigate("/")}
@@ -17,16 +17,17 @@ const About = () => {
             <ArrowLeft className="w-4 h-4" />
             Back to Home
           </Button>
+          <img src="/logo.png" alt="Math Maxxer" className="w-10 h-10 ml-auto" />
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-12 max-w-4xl">
-        <h1 className="text-4xl font-bold mb-8 text-foreground">About Us</h1>
+        <h1 className="text-4xl font-bold mb-8 text-foreground">About Math Maxxer</h1>
         
         <section className="space-y-8">
           <div>
             <p className="text-lg text-muted-foreground mb-6">
-              We are a passionate gaming company dedicated to creating engaging and educational games that challenge minds and bring people together. Our flagship title, Math Battle, combines competitive gameplay with mental mathematics to create a unique gaming experience.
+              We are a passionate gaming company dedicated to creating engaging and educational games that challenge minds and bring people together. Our flagship title, Math Maxxer, combines competitive gameplay with mental mathematics to create a unique gaming experience.
             </p>
           </div>
 
@@ -80,7 +81,7 @@ const About = () => {
               We develop multiple educational and competitive games designed to make learning enjoyable:
             </p>
             <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-              <li>Math Battle - Our flagship mental arithmetic competition game</li>
+              <li>Math Maxxer - Our flagship mental arithmetic competition game</li>
               <li>More exciting titles coming soon!</li>
             </ul>
           </div>
