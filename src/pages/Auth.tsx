@@ -2,11 +2,9 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { Brain } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import mathBackground from "@/assets/math-background.jpg";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -14,6 +12,7 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -81,69 +80,103 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "var(--gradient-primary)" }}>
-      <Card className="w-full max-w-md border-border/50">
-        <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-            <Brain className="w-8 h-8 text-primary" />
+    <div 
+      className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center"
+      style={{ backgroundImage: `url(${mathBackground})` }}
+    >
+      <div className="w-full max-w-md backdrop-blur-md bg-background/30 rounded-3xl border-2 border-white/20 p-8 shadow-2xl">
+        <h1 className="text-4xl font-bold text-center text-white mb-8">
+          {isLogin ? "login" : "register"}
+        </h1>
+        
+        <form onSubmit={handleAuth} className="space-y-6">
+          {!isLogin && (
+            <div className="space-y-2">
+              <label htmlFor="username" className="text-white text-sm">
+                Username
+              </label>
+              <input
+                id="username"
+                type="text"
+                placeholder="Choose a username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full bg-transparent border-b-2 border-white/50 text-white placeholder:text-white/60 px-1 py-2 outline-none focus:border-white transition-colors"
+              />
+            </div>
+          )}
+          
+          <div className="space-y-2">
+            <label htmlFor="email" className="text-white text-sm">
+              {isLogin ? "Username" : "Email"}
+            </label>
+            <input
+              id="email"
+              type="email"
+              placeholder={isLogin ? "" : "your@email.com"}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full bg-transparent border-b-2 border-white/50 text-white placeholder:text-white/60 px-1 py-2 outline-none focus:border-white transition-colors"
+            />
           </div>
-          <div>
-            <CardTitle className="text-3xl font-bold">Math Battle Arena</CardTitle>
-            <CardDescription className="text-base mt-2">
-              {isLogin ? "Welcome back! Sign in to continue." : "Create your account to start competing."}
-            </CardDescription>
+          
+          <div className="space-y-2">
+            <label htmlFor="password" className="text-white text-sm">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              placeholder=""
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+              className="w-full bg-transparent border-b-2 border-white/50 text-white placeholder:text-white/60 px-1 py-2 outline-none focus:border-white transition-colors"
+            />
           </div>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleAuth} className="space-y-4">
-            {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
-                <Input
-                  id="username"
-                  placeholder="Choose a username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+          
+          {isLogin && (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Checkbox 
+                  id="remember" 
+                  checked={rememberMe}
+                  onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                  className="border-white data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                 />
+                <label htmlFor="remember" className="text-white text-sm cursor-pointer">
+                  Remember me
+                </label>
               </div>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+              <button 
+                type="button"
+                className="text-white/80 hover:text-white text-sm transition-colors"
+              >
+                Forgot Password?
+              </button>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Please wait..." : isLogin ? "Sign In" : "Sign Up"}
-            </Button>
-          </form>
-          <div className="mt-6 text-center">
-            <button
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
-              {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
-            </button>
-          </div>
-        </CardContent>
-      </Card>
+          )}
+          
+          <Button 
+            type="submit" 
+            className="w-full bg-white/90 hover:bg-white text-foreground font-medium py-6 rounded-xl text-lg"
+            disabled={loading}
+          >
+            {loading ? "Please wait..." : isLogin ? "Login" : "Sign Up"}
+          </Button>
+        </form>
+        
+        <div className="mt-6 text-center">
+          <button
+            onClick={() => setIsLogin(!isLogin)}
+            className="text-white/90 hover:text-white text-sm transition-colors"
+          >
+            {isLogin ? "Don't have an account? Register" : "Already have an account? Sign in"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
