@@ -76,11 +76,9 @@ const Index = () => {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <Brain className="w-6 h-6 text-primary" />
-            </div>
+            <img src="/logo.png" alt="Math Maxxer" className="w-12 h-12" />
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold">Math Battle Arena</h1>
+              <h1 className="text-2xl md:text-3xl font-bold">Math Maxxer</h1>
               <p className="text-sm text-muted-foreground">Compete. Learn. Dominate.</p>
             </div>
           </div>
