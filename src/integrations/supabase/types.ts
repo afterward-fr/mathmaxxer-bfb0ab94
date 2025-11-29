@@ -579,7 +579,7 @@ export type Database = {
         }[]
       }
       verify_answer: {
-        Args: { question_id: string; user_answer: string }
+        Args: { p_question_id: string; user_answer: string }
         Returns: boolean
       }
     }

@@ -148,7 +148,7 @@ const Game = () => {
     
     // Use server-side answer verification
     const { data: isCorrect, error } = await supabase.rpc('verify_answer', {
-      question_id: currentQuestion.id,
+      p_question_id: currentQuestion.id,
       user_answer: validation.data
     });
  
