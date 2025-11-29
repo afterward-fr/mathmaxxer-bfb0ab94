@@ -123,9 +123,9 @@ const Game = () => {
 
   const submitAnswer = useCallback(async () => {
     const currentQuestion = questions[currentQuestionIndex];
-    const { data: user } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
     
-    if (!user?.user || !gameSessionId) {
+    if (!user || !gameSessionId) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -178,7 +178,7 @@ const Game = () => {
         question_id: currentQuestion.id,
         user_answer: userAnswer.trim(),
         is_correct: isCorrect,
-        user_id: user.user.id,
+        user_id: user.id,
       });
 
     if (logError) {
