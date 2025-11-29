@@ -151,19 +151,27 @@ const Game = () => {
       question_id: currentQuestion.id,
       user_answer: validation.data
     });
-
+ 
     if (error) {
+      console.error("verify_answer RPC error", error);
       // Handle rate limit error specifically
-      if (error.message.includes('Rate limit exceeded')) {
+      if (error.message?.includes('Rate limit exceeded')) {
         toast({
           title: "Too Many Attempts",
           description: "Please wait a minute before trying again",
           variant: "destructive",
         });
+      } else if (error.message?.includes('Authentication required')) {
+        toast({
+          title: "Login Required",
+          description: "Please log in again to continue playing",
+          variant: "destructive",
+        });
+        navigate("/auth");
       } else {
         toast({
           title: "Error",
-          description: "Failed to verify answer",
+          description: `Failed to verify answer: ${error.message ?? 'Unknown error'}`,
           variant: "destructive",
         });
       }
