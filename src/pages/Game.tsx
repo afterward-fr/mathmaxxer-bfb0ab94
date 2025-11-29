@@ -244,18 +244,14 @@ const Game = () => {
     }
 
     if (data && typeof data === 'object' && 'success' in data && data.success) {
-      const result = data as { success: boolean; score: number; points_earned: number; new_practice_rating: number; total_games: number; rating_multiplier?: number };
+      const result = data as { success: boolean; score: number; points_earned: number; new_practice_rating: number; total_games: number };
       
       // Update local score with server-calculated value
       setScore(result.score);
       
-      const multiplierText = result.rating_multiplier 
-        ? ` (${result.rating_multiplier}× multiplier)` 
-        : '';
-      
       toast({
         title: "Game Complete!",
-        description: `You earned ${result.points_earned} practice points${multiplierText}!`,
+        description: `You earned ${result.points_earned} practice points!`,
       });
 
       // Check for achievements after game completion
@@ -344,13 +340,13 @@ const Game = () => {
       <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "var(--gradient-primary)" }}>
         <Card className="max-w-md w-full p-8 text-center space-y-6">
           <Trophy className="w-16 h-16 mx-auto text-primary" />
-          <div>
-            <h2 className="text-3xl font-bold mb-2">Game Over!</h2>
-            <div className="space-y-2 text-lg">
-              <p>Your Score: <span className="text-primary font-bold">{score}/{questions.length}</span></p>
-              <p className="text-muted-foreground">IQ Points Earned: +{score * 10}</p>
+            <div>
+              <h2 className="text-3xl font-bold mb-2">Game Over!</h2>
+              <div className="space-y-2 text-lg">
+                <p>Your Score: <span className="text-primary font-bold">{score}/{questions.length}</span></p>
+                <p className="text-muted-foreground">Practice Points Earned: +{score > 0 ? '10-30' : '0'}</p>
+              </div>
             </div>
-          </div>
           <div className="space-y-3">
             <Button onClick={() => navigate("/")} size="lg" className="w-full">
               Back to Menu
