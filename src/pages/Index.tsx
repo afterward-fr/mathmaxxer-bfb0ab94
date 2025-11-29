@@ -204,7 +204,7 @@ const Index = () => {
         </div>
 
         {/* Solo Game, Leaderboard, and Bug Report */}
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid md:grid-cols-2 gap-4">
           <Card style={{ boxShadow: "var(--shadow-game)" }}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -213,7 +213,40 @@ const Index = () => {
               </CardTitle>
               <CardDescription>Practice without affecting competitive rating</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Difficulty</label>
+                <Select value={difficulty} onValueChange={setDifficulty}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="beginner">Beginner (15-8 pts)</SelectItem>
+                    <SelectItem value="elementary">Elementary (18-10 pts)</SelectItem>
+                    <SelectItem value="intermediate">Intermediate (21-10 pts)</SelectItem>
+                    <SelectItem value="advanced">Advanced (24-10 pts)</SelectItem>
+                    <SelectItem value="expert">Expert (27-10 pts)</SelectItem>
+                    <SelectItem value="master">Master (30-10 pts)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Time Control</label>
+                <Select value={timeControl} onValueChange={setTimeControl}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="3+2">3 min / 2 questions</SelectItem>
+                    <SelectItem value="5+5">5 min / 5 questions</SelectItem>
+                    <SelectItem value="10+10">10 min / 10 questions</SelectItem>
+                    <SelectItem value="15+15">15 min / 15 questions</SelectItem>
+                    <SelectItem value="30+30">30 min / 30 questions</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
               <Button onClick={startGame} className="w-full">
                 <Brain className="w-4 h-4 mr-2" />
                 Start Solo Game
@@ -221,41 +254,43 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          <Card style={{ boxShadow: "var(--shadow-game)" }}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Award className="w-5 h-5 text-primary" />
-                Leaderboard
-              </CardTitle>
-              <CardDescription>See top players ranked</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Button onClick={() => navigate("/leaderboard")} variant="outline" className="w-full">
-                <Trophy className="w-4 h-4 mr-2" />
-                View Rankings
-              </Button>
-              <Button onClick={() => navigate("/friends")} variant="glow" className="w-full">
-                <UserPlus className="w-4 h-4 mr-2" />
-                Add Friend
-              </Button>
-            </CardContent>
-          </Card>
+          <div className="space-y-4">
+            <Card style={{ boxShadow: "var(--shadow-game)" }}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Award className="w-5 h-5 text-primary" />
+                  Leaderboard
+                </CardTitle>
+                <CardDescription>See top players ranked</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button onClick={() => navigate("/leaderboard")} variant="outline" className="w-full">
+                  <Trophy className="w-4 h-4 mr-2" />
+                  View Rankings
+                </Button>
+                <Button onClick={() => navigate("/friends")} variant="glow" className="w-full">
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Add Friend
+                </Button>
+              </CardContent>
+            </Card>
 
-          <Card style={{ boxShadow: "var(--shadow-game)" }}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bug className="w-5 h-5 text-primary" />
-                Bug Report
-              </CardTitle>
-              <CardDescription>Help us improve</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button onClick={() => navigate("/bug-report")} variant="outline" className="w-full">
-                <Bug className="w-4 h-4 mr-2" />
-                Report a Bug
-              </Button>
-            </CardContent>
-          </Card>
+            <Card style={{ boxShadow: "var(--shadow-game)" }}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bug className="w-5 h-5 text-primary" />
+                  Bug Report
+                </CardTitle>
+                <CardDescription>Help us improve</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button onClick={() => navigate("/bug-report")} variant="outline" className="w-full">
+                  <Bug className="w-4 h-4 mr-2" />
+                  Report a Bug
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         {/* Game Modes Info */}
