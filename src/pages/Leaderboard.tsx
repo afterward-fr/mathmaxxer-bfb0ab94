@@ -68,6 +68,30 @@ const Leaderboard = () => {
     }
 
     try {
+      // Check if friendship already exists (in either direction)
+      const { data: existingFriendship } = await supabase
+        .from("friendships")
+        .select("id, status")
+        .or(`and(user_id.eq.${currentUserId},friend_id.eq.${friendId}),and(user_id.eq.${friendId},friend_id.eq.${currentUserId})`)
+        .maybeSingle();
+
+      if (existingFriendship) {
+        if (existingFriendship.status === 'accepted') {
+          toast({
+            title: "Already Friends",
+            description: "You are already friends with this user",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Request Already Sent",
+            description: "A friend request is already pending",
+            variant: "destructive",
+          });
+        }
+        return;
+      }
+
       const { error } = await supabase
         .from("friendships")
         .insert({
