@@ -8,6 +8,7 @@ import { ArrowLeft, Users, Search, UserPlus } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import FriendsList from "@/components/FriendsList";
 import FriendRequests from "@/components/FriendRequests";
+import SentFriendRequests from "@/components/SentFriendRequests";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { z } from "zod";
 
@@ -186,6 +187,9 @@ const Friends = () => {
 
         {/* Friend Requests */}
         <FriendRequests userId={user.id} onUpdate={handleRequestUpdate} />
+
+        {/* Sent Requests */}
+        <SentFriendRequests userId={user.id} />
 
         {/* Friends List */}
         <FriendsList userId={user.id} key={refreshKey} />
