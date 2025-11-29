@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, User, ArrowLeft, Calendar, TrendingUp, Target, Zap, Brain, Clock, Award } from "lucide-react";
+import { Trophy, User, ArrowLeft, Calendar, TrendingUp, Target, Zap, Brain, Clock, Award, UserPlus, Swords } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { format } from "date-fns";
@@ -62,6 +62,7 @@ const Profile = () => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [achievements, setAchievements] = useState<any[]>([]);
   const [userAchievements, setUserAchievements] = useState<any[]>([]);
+  const [friendshipStatus, setFriendshipStatus] = useState<'none' | 'pending' | 'accepted' | 'loading'>('loading');
   const { checkAndAwardAchievements } = useAchievements();
 
   useEffect(() => {
@@ -78,6 +79,23 @@ const Profile = () => {
 
       const targetUserId = userId || session.user.id;
       setCurrentUserId(session.user.id);
+
+      // Check friendship status if viewing another user's profile
+      if (userId && userId !== session.user.id) {
+        const { data: friendshipData } = await supabase
+          .from("friendships")
+          .select("status")
+          .or(`and(user_id.eq.${session.user.id},friend_id.eq.${userId}),and(user_id.eq.${userId},friend_id.eq.${session.user.id})`)
+          .maybeSingle();
+
+        if (friendshipData) {
+          setFriendshipStatus(friendshipData.status as 'pending' | 'accepted');
+        } else {
+          setFriendshipStatus('none');
+        }
+      } else {
+        setFriendshipStatus('none');
+      }
 
       // Load profile
       const { data: profileData, error: profileError } = await supabase
@@ -187,6 +205,42 @@ const Profile = () => {
     return allGames;
   };
 
+  const sendFriendRequest = async () => {
+    if (!currentUserId || !profile) return;
+
+    try {
+      const { error } = await supabase
+        .from("friendships")
+        .insert({
+          user_id: currentUserId,
+          friend_id: profile.id,
+          status: "pending",
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Friend request sent!",
+        description: "Wait for them to accept your request",
+      });
+
+      setFriendshipStatus('pending');
+    } catch (error: any) {
+      console.error("Error sending friend request:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send friend request",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const challengeUser = () => {
+    if (profile) {
+      navigate(`/multiplayer?friendId=${profile.id}`);
+    }
+  };
+
   const getDifficultyStats = () => {
     const stats: Record<string, { played: number, won: number }> = {};
     
@@ -267,11 +321,32 @@ const Profile = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Home
           </Button>
-          {isOwnProfile && (
+          {isOwnProfile ? (
             <Button onClick={() => navigate("/leaderboard")} variant="outline" size="sm">
               <Trophy className="w-4 h-4 mr-2" />
               Leaderboard
             </Button>
+          ) : (
+            <div className="flex gap-2">
+              {friendshipStatus === 'accepted' && (
+                <Button onClick={challengeUser} size="sm">
+                  <Swords className="w-4 h-4 mr-2" />
+                  Challenge
+                </Button>
+              )}
+              {friendshipStatus === 'none' && (
+                <Button onClick={sendFriendRequest} size="sm" variant="outline">
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Add Friend
+                </Button>
+              )}
+              {friendshipStatus === 'pending' && (
+                <Button size="sm" variant="outline" disabled>
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Request Sent
+                </Button>
+              )}
+            </div>
           )}
         </div>
 

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trophy, Medal, Award, ArrowLeft, Crown } from "lucide-react";
+import { Trophy, Medal, Award, ArrowLeft, Crown, UserPlus } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import AdBanner from "@/components/AdBanner";
 
@@ -54,6 +54,41 @@ const Leaderboard = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const sendFriendRequest = async (friendId: string) => {
+    if (!currentUserId) {
+      toast({
+        title: "Error",
+        description: "You must be logged in",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("friendships")
+        .insert({
+          user_id: currentUserId,
+          friend_id: friendId,
+          status: "pending",
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Friend request sent!",
+        description: "Wait for them to accept your request",
+      });
+    } catch (error: any) {
+      console.error("Error sending friend request:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send friend request",
+        variant: "destructive",
+      });
     }
   };
 
@@ -110,11 +145,12 @@ const Leaderboard = () => {
               {/* Header Row */}
               <div className="grid grid-cols-12 gap-2 md:gap-4 p-3 text-sm font-semibold text-muted-foreground border-b">
                 <div className="col-span-1">Rank</div>
-                <div className="col-span-4 md:col-span-3">Player</div>
+                <div className="col-span-3 md:col-span-3">Player</div>
                 <div className="col-span-2 text-center">Competitive</div>
                 <div className="col-span-2 text-center hidden md:block">Games</div>
                 <div className="col-span-2 text-center">W/L</div>
-                <div className="col-span-3 md:col-span-2 text-center">Win Rate</div>
+                <div className="col-span-2 md:col-span-1 text-center">Win Rate</div>
+                <div className="col-span-2 md:col-span-1"></div>
               </div>
 
               {/* Leaderboard Entries */}
@@ -134,7 +170,7 @@ const Leaderboard = () => {
                     <div className="col-span-1 flex items-center">
                       {getRankIcon(rank)}
                     </div>
-                    <div className="col-span-4 md:col-span-3 flex items-center font-medium truncate">
+                    <div className="col-span-3 md:col-span-3 flex items-center font-medium truncate">
                       <button
                         onClick={() => navigate(`/profile/${entry.id}`)}
                         className="hover:text-primary transition-colors text-left"
@@ -160,8 +196,20 @@ const Leaderboard = () => {
                         <span className="text-red-500 font-semibold">{entry.losses}</span>
                       </span>
                     </div>
-                    <div className="col-span-3 md:col-span-2 flex items-center justify-center font-semibold">
+                    <div className="col-span-2 md:col-span-1 flex items-center justify-center font-semibold">
                       {getWinRate(entry.wins, entry.total_games)}
+                    </div>
+                    <div className="col-span-2 md:col-span-1 flex items-center justify-center">
+                      {!isCurrentUser && (
+                        <Button
+                          onClick={() => sendFriendRequest(entry.id)}
+                          size="sm"
+                          variant="outline"
+                        >
+                          <UserPlus className="w-4 h-4 md:mr-2" />
+                          <span className="hidden md:inline">Add</span>
+                        </Button>
+                      )}
                     </div>
                   </div>
                 );
