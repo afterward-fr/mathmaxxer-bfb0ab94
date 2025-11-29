@@ -244,13 +244,18 @@ const Game = () => {
     }
 
     if (data && typeof data === 'object' && 'success' in data && data.success) {
-      const result = data as { success: boolean; score: number; points_earned: number; new_practice_rating: number; total_games: number };
+      const result = data as { success: boolean; score: number; points_earned: number; new_practice_rating: number; total_games: number; rating_multiplier?: number };
       
       // Update local score with server-calculated value
       setScore(result.score);
+      
+      const multiplierText = result.rating_multiplier 
+        ? ` (${result.rating_multiplier}× multiplier)` 
+        : '';
+      
       toast({
         title: "Game Complete!",
-        description: `You earned ${result.points_earned} practice points!`,
+        description: `You earned ${result.points_earned} practice points${multiplierText}!`,
       });
 
       // Check for achievements after game completion
