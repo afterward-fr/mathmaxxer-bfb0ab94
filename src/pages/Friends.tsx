@@ -10,6 +10,7 @@ import FriendsList from "@/components/FriendsList";
 import FriendRequests from "@/components/FriendRequests";
 import SentFriendRequests from "@/components/SentFriendRequests";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserCheck, UserX, Inbox } from "lucide-react";
 import { z } from "zod";
 
 const searchQuerySchema = z.string().trim().min(1, "Search query cannot be empty").max(50, "Search query must be less than 50 characters");
@@ -22,6 +23,8 @@ const Friends = () => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [pendingRequests, setPendingRequests] = useState<any[]>([]);
+  const [loadingRequests, setLoadingRequests] = useState(true);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -32,6 +35,83 @@ const Friends = () => {
       }
     });
   }, [navigate]);
+
+  useEffect(() => {
+    if (user?.id) {
+      loadPendingRequests();
+    }
+  }, [user?.id, refreshKey]);
+
+  const loadPendingRequests = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("friendships")
+        .select(`
+          *,
+          requester:user_id (id, username, iq_rating, practice_rating, avatar_url)
+        `)
+        .eq("friend_id", user.id)
+        .eq("status", "pending");
+
+      if (error) throw error;
+      setPendingRequests(data || []);
+    } catch (error) {
+      console.error("Error loading friend requests:", error);
+    } finally {
+      setLoadingRequests(false);
+    }
+  };
+
+  const acceptRequest = async (friendshipId: string) => {
+    try {
+      const { error } = await supabase
+        .from("friendships")
+        .update({ status: "accepted" })
+        .eq("id", friendshipId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Friend request accepted!",
+        description: "You are now friends",
+      });
+
+      loadPendingRequests();
+      handleRequestUpdate();
+    } catch (error) {
+      console.error("Error accepting request:", error);
+      toast({
+        title: "Error",
+        description: "Failed to accept friend request",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const declineRequest = async (friendshipId: string) => {
+    try {
+      const { error } = await supabase
+        .from("friendships")
+        .delete()
+        .eq("id", friendshipId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Friend request declined",
+        description: "Request has been removed",
+      });
+
+      loadPendingRequests();
+    } catch (error) {
+      console.error("Error declining request:", error);
+      toast({
+        title: "Error",
+        description: "Failed to decline friend request",
+        variant: "destructive",
+      });
+    }
+  };
 
   const searchUsers = async () => {
     // Validate search query
@@ -139,47 +219,96 @@ const Friends = () => {
             </CardTitle>
             <CardDescription>Search for users by username</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex gap-2">
-              <Input
-                placeholder="Search username..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && searchUsers()}
-              />
-              <Button onClick={searchUsers} disabled={searching}>
-                <Search className="w-4 h-4 mr-2" />
-                Search
-              </Button>
+          <CardContent className="space-y-6">
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Search username..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && searchUsers()}
+                />
+                <Button onClick={searchUsers} disabled={searching}>
+                  <Search className="w-4 h-4 mr-2" />
+                  Search
+                </Button>
+              </div>
+
+              {searchResults.length > 0 && (
+                <div className="space-y-2">
+                  {searchResults.map((profile) => (
+                    <div
+                      key={profile.id}
+                      className="flex items-center justify-between p-4 rounded-lg bg-secondary/50"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Avatar className="w-10 h-10 border-2 border-primary/20">
+                          <AvatarImage src={profile.avatar_url || undefined} alt={profile.username} />
+                          <AvatarFallback className="bg-primary/10">
+                            {profile.username.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium">{profile.username}</p>
+                          <p className="text-sm text-muted-foreground">
+                            IQ Rating: {profile.iq_rating}
+                          </p>
+                        </div>
+                      </div>
+                      <Button onClick={() => sendFriendRequest(profile.id)} size="sm">
+                        <UserPlus className="w-4 h-4 mr-2" />
+                        Add Friend
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {searchResults.length > 0 && (
-              <div className="space-y-2">
-                {searchResults.map((profile) => (
-                  <div
-                    key={profile.id}
-                    className="flex items-center justify-between p-4 rounded-lg bg-secondary/50"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Avatar className="w-10 h-10 border-2 border-primary/20">
-                        <AvatarImage src={profile.avatar_url || undefined} alt={profile.username} />
-                        <AvatarFallback className="bg-primary/10">
-                          {profile.username.slice(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{profile.username}</p>
-                        <p className="text-sm text-muted-foreground">
-                          IQ Rating: {profile.iq_rating}
-                        </p>
+            {/* Pending Friend Requests */}
+            {!loadingRequests && pendingRequests.length > 0 && (
+              <div className="border-t pt-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Inbox className="w-5 h-5 text-primary" />
+                  <h3 className="font-semibold">Pending Requests ({pendingRequests.length})</h3>
+                </div>
+                <div className="space-y-2">
+                  {pendingRequests.map((request) => (
+                    <div
+                      key={request.id}
+                      className="flex items-center justify-between p-4 rounded-lg bg-secondary/50"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Avatar className="w-10 h-10 border-2 border-primary/20">
+                          <AvatarImage src={request.requester.avatar_url || undefined} alt={request.requester.username} />
+                          <AvatarFallback className="bg-primary/10">
+                            {request.requester.username.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium">{request.requester.username}</p>
+                          <p className="text-sm text-muted-foreground">
+                            IQ Rating: {request.requester.iq_rating}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button onClick={() => acceptRequest(request.id)} size="sm">
+                          <UserCheck className="w-4 h-4 mr-2" />
+                          Accept
+                        </Button>
+                        <Button
+                          onClick={() => declineRequest(request.id)}
+                          size="sm"
+                          variant="outline"
+                        >
+                          <UserX className="w-4 h-4 mr-2" />
+                          Decline
+                        </Button>
                       </div>
                     </div>
-                    <Button onClick={() => sendFriendRequest(profile.id)} size="sm">
-                      <UserPlus className="w-4 h-4 mr-2" />
-                      Add Friend
-                    </Button>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
           </CardContent>
