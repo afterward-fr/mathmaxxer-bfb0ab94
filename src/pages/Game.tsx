@@ -25,6 +25,9 @@ const Game = () => {
   
   const difficulty = searchParams.get("difficulty") || "beginner";
   const timeControl = (searchParams.get("timeControl") || "5+5").replace(/\s/g, "+");
+  const matchId = searchParams.get("matchId");
+  const mode = searchParams.get("mode") || "solo";
+  const isMultiplayer = mode === "multiplayer";
   
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -36,6 +39,11 @@ const Game = () => {
   const [loading, setLoading] = useState(true);
   const [gameSessionId, setGameSessionId] = useState<string | null>(null);
   const [showInterstitialAd, setShowInterstitialAd] = useState(false);
+  const [matchResult, setMatchResult] = useState<{
+    won: boolean;
+    ratingChange: number;
+    opponentScore: number;
+  } | null>(null);
   const { checkAndAwardAchievements } = useAchievements();
 
   const [totalTime, totalQuestions] = timeControl.split("+").map(Number);
@@ -95,28 +103,32 @@ const Game = () => {
       return;
     }
 
-    // Create game session
-    const { data: session, error } = await supabase
-      .from("game_sessions")
-      .insert({
-        user_id: user.id,
-        difficulty,
-        time_control: timeControl,
-        total_questions: totalQuestions,
-      })
-      .select()
-      .single();
+    // For multiplayer, we don't create a game session, we use the match
+    if (!isMultiplayer) {
+      // Create game session for solo games
+      const { data: session, error } = await supabase
+        .from("game_sessions")
+        .insert({
+          user_id: user.id,
+          difficulty,
+          time_control: timeControl,
+          total_questions: totalQuestions,
+        })
+        .select()
+        .single();
 
-    if (error || !session) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to start game session",
-      });
-      return;
+      if (error || !session) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to start game session",
+        });
+        return;
+      }
+
+      setGameSessionId(session.id);
     }
 
-    setGameSessionId(session.id);
     setGameStarted(true);
     setTimeLeft(totalTime * 60);
   };
@@ -125,7 +137,7 @@ const Game = () => {
     const currentQuestion = questions[currentQuestionIndex];
     const { data: { user } } = await supabase.auth.getUser();
     
-    if (!user || !gameSessionId) {
+    if (!user || (!gameSessionId && !isMultiplayer) || (isMultiplayer && !matchId)) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -179,10 +191,14 @@ const Game = () => {
     }
 
     // Log answer to database for server-side score calculation
+    const tableName = isMultiplayer ? "match_answers" : "game_answers";
+    const sessionField = isMultiplayer ? "match_id" : "game_session_id";
+    const sessionId = isMultiplayer ? matchId : gameSessionId;
+
     const { error: logError } = await supabase
-      .from("game_answers")
+      .from(tableName as any)
       .insert({
-        game_session_id: gameSessionId,
+        [sessionField]: sessionId,
         question_id: currentQuestion.id,
         user_answer: userAnswer.trim(),
         is_correct: isCorrect,
@@ -219,6 +235,104 @@ const Game = () => {
   const endGame = async () => {
     setGameEnded(true);
     
+    if (isMultiplayer && matchId) {
+      // Handle multiplayer match completion
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Not authenticated");
+
+        // Get opponent's score
+        const { data: answers } = await supabase
+          .from("match_answers")
+          .select("user_id, is_correct")
+          .eq("match_id", matchId);
+
+        if (!answers) throw new Error("Failed to load match answers");
+
+        // Calculate both players' scores
+        const myScore = answers.filter(a => a.user_id === user.id && a.is_correct).length;
+        const opponentAnswers = answers.filter(a => a.user_id !== user.id);
+        const opponentScore = opponentAnswers.filter(a => a.is_correct).length;
+
+        // Get match to determine player positions
+        const { data: match } = await supabase
+          .from("matches")
+          .select("player1_id, player2_id")
+          .eq("id", matchId)
+          .single();
+
+        if (!match) throw new Error("Match not found");
+
+        const player1Score = match.player1_id === user.id ? myScore : opponentScore;
+        const player2Score = match.player2_id === user.id ? myScore : opponentScore;
+
+        // Call edge function to complete match
+        const { data: result, error } = await supabase.functions.invoke('complete-match', {
+          body: {
+            matchId,
+            player1Score,
+            player2Score,
+          },
+        });
+
+        if (error) throw error;
+
+        const won = result.winnerId === user.id;
+        const isDraw = result.winnerId === null;
+        const ratingChange = match.player1_id === user.id 
+          ? result.player1RatingChange 
+          : result.player2RatingChange;
+
+        setScore(myScore);
+        setMatchResult({
+          won,
+          ratingChange,
+          opponentScore,
+        });
+
+        toast({
+          title: isDraw ? "Match Draw!" : (won ? "Victory! 🎉" : "Defeat"),
+          description: `Rating: ${ratingChange > 0 ? '+' : ''}${ratingChange}`,
+          variant: won ? "default" : "destructive",
+        });
+
+        // Check achievements
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+
+        const { data: matches } = await supabase
+          .from("matches")
+          .select("*")
+          .or(`player1_id.eq.${user.id},player2_id.eq.${user.id}`)
+          .eq("status", "completed")
+          .order("completed_at", { ascending: false })
+          .limit(20);
+
+        if (profile) {
+          await checkAndAwardAchievements({
+            userId: user.id,
+            profile,
+            gameSessions: [],
+            matches: matches || [],
+          });
+        }
+
+        setShowInterstitialAd(true);
+      } catch (error: any) {
+        console.error("Failed to complete match:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to save match results",
+        });
+      }
+      return;
+    }
+
+    // Solo game completion
     if (!gameSessionId) {
       toast({
         variant: "destructive",
@@ -340,13 +454,30 @@ const Game = () => {
       <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "var(--gradient-primary)" }}>
         <Card className="max-w-md w-full p-8 text-center space-y-6">
           <Trophy className="w-16 h-16 mx-auto text-primary" />
-            <div>
-              <h2 className="text-3xl font-bold mb-2">Game Over!</h2>
-              <div className="space-y-2 text-lg">
-                <p>Your Score: <span className="text-primary font-bold">{score}/{questions.length}</span></p>
-                <p className="text-muted-foreground">Practice Points Earned: +{score > 0 ? '10-30' : '0'}</p>
-              </div>
-            </div>
+          <div>
+            {isMultiplayer && matchResult ? (
+              <>
+                <h2 className="text-3xl font-bold mb-2">
+                  {matchResult.won ? "Victory! 🎉" : (score === matchResult.opponentScore ? "Draw" : "Defeat")}
+                </h2>
+                <div className="space-y-2 text-lg">
+                  <p>Your Score: <span className="text-primary font-bold">{score}/{questions.length}</span></p>
+                  <p className="text-muted-foreground">Opponent: {matchResult.opponentScore}/{questions.length}</p>
+                  <p className={`font-bold ${matchResult.ratingChange > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    IQ Rating: {matchResult.ratingChange > 0 ? '+' : ''}{matchResult.ratingChange}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 className="text-3xl font-bold mb-2">Game Over!</h2>
+                <div className="space-y-2 text-lg">
+                  <p>Your Score: <span className="text-primary font-bold">{score}/{questions.length}</span></p>
+                  <p className="text-muted-foreground">Practice Points Earned: +{score > 0 ? '10-30' : '0'}</p>
+                </div>
+              </>
+            )}
+          </div>
           <div className="space-y-3">
             <Button onClick={() => navigate("/")} size="lg" className="w-full">
               Back to Menu
