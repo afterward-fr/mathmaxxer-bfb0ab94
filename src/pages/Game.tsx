@@ -44,6 +44,9 @@ const Game = () => {
     ratingChange: number;
     opponentScore: number;
   } | null>(null);
+  const [practiceResult, setPracticeResult] = useState<{
+    ratingChange: number;
+  } | null>(null);
   const { checkAndAwardAchievements } = useAchievements();
 
   const [totalTime, totalQuestions] = timeControl.split("+").map(Number);
@@ -342,30 +345,28 @@ const Game = () => {
       return;
     }
 
-    // Call secure function to complete game (calculates score server-side)
-    const { data, error } = await supabase.rpc("complete_game", {
-      p_session_id: gameSessionId,
-    });
-
-    if (error) {
-      console.error("Failed to complete game:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to save game results",
+    try {
+      // Call edge function to complete game with rating changes
+      const { data, error } = await supabase.functions.invoke('complete-solo-game', {
+        body: { sessionId: gameSessionId },
       });
-      return;
-    }
 
-    if (data && typeof data === 'object' && 'success' in data && data.success) {
-      const result = data as { success: boolean; score: number; points_earned: number; new_practice_rating: number; total_games: number };
-      
+      if (error) throw error;
+
       // Update local score with server-calculated value
-      setScore(result.score);
+      setScore(data.score);
+      
+      const pointsChange = data.points_earned;
+      setPracticeResult({
+        ratingChange: pointsChange,
+      });
       
       toast({
         title: "Game Complete!",
-        description: `You earned ${result.points_earned} practice points!`,
+        description: pointsChange >= 0 
+          ? `+${pointsChange} practice points!` 
+          : `${pointsChange} practice points`,
+        variant: pointsChange >= 0 ? "default" : "destructive",
       });
 
       // Check for achievements after game completion
@@ -405,6 +406,13 @@ const Game = () => {
       
       // Show interstitial ad after game completion
       setShowInterstitialAd(true);
+    } catch (error: any) {
+      console.error("Failed to complete game:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to save game results",
+      });
     }
   };
 
@@ -468,12 +476,21 @@ const Game = () => {
                   </p>
                 </div>
               </>
+            ) : practiceResult ? (
+              <>
+                <h2 className="text-3xl font-bold mb-2">Game Over!</h2>
+                <div className="space-y-2 text-lg">
+                  <p>Your Score: <span className="text-primary font-bold">{score}/{questions.length}</span></p>
+                  <p className={`font-bold ${practiceResult.ratingChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    Practice Rating: {practiceResult.ratingChange > 0 ? '+' : ''}{practiceResult.ratingChange}
+                  </p>
+                </div>
+              </>
             ) : (
               <>
                 <h2 className="text-3xl font-bold mb-2">Game Over!</h2>
                 <div className="space-y-2 text-lg">
                   <p>Your Score: <span className="text-primary font-bold">{score}/{questions.length}</span></p>
-                  <p className="text-muted-foreground">Practice Points Earned: +{score > 0 ? '10-30' : '0'}</p>
                 </div>
               </>
             )}

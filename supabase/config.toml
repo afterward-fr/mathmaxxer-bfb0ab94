@@ -2,3 +2,6 @@ project_id = "pkmufyaxrxralqpgvfqr"
 
 [functions.complete-match]
 verify_jwt = true
+
+[functions.complete-solo-game]
+verify_jwt = true
