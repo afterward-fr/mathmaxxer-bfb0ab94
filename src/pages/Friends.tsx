@@ -128,15 +128,34 @@ const Friends = () => {
 
     setSearching(true);
     try {
-      const { data, error } = await supabase
+      // Get all profiles matching search
+      const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
         .select("*")
         .ilike("username", `%${searchQuery}%`)
         .neq("id", user.id)
         .limit(10);
 
-      if (error) throw error;
-      setSearchResults(data || []);
+      if (profilesError) throw profilesError;
+
+      // Get existing friendships to filter out
+      const { data: friendships, error: friendshipsError } = await supabase
+        .from("friendships")
+        .select("user_id, friend_id")
+        .or(`user_id.eq.${user.id},friend_id.eq.${user.id}`);
+
+      if (friendshipsError) throw friendshipsError;
+
+      // Filter out users with existing friendship relationships
+      const friendshipUserIds = new Set(
+        friendships?.flatMap(f => [f.user_id, f.friend_id]) || []
+      );
+      
+      const filteredResults = profiles?.filter(
+        profile => !friendshipUserIds.has(profile.id)
+      ) || [];
+
+      setSearchResults(filteredResults);
     } catch (error) {
       console.error("Error searching users:", error);
       toast({
