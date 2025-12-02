@@ -42,6 +42,56 @@ const Friends = () => {
     }
   }, [user?.id, refreshKey]);
 
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel('friendships-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'friendships',
+          filter: `friend_id=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log('New friend request received:', payload);
+          loadPendingRequests();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'friendships',
+          filter: `friend_id=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log('Friend request updated:', payload);
+          loadPendingRequests();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'friendships',
+        },
+        (payload) => {
+          console.log('Friend request deleted:', payload);
+          loadPendingRequests();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
+
   const loadPendingRequests = async () => {
     try {
       const { data, error } = await supabase
