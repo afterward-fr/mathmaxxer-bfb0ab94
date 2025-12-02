@@ -333,9 +333,6 @@ const Friends = () => {
           </CardContent>
         </Card>
 
-        {/* Friend Requests */}
-        <FriendRequests userId={user.id} onUpdate={handleRequestUpdate} />
-
         {/* Sent Requests */}
         <SentFriendRequests userId={user.id} />
 
