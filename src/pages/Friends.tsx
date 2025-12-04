@@ -12,6 +12,7 @@ import SentFriendRequests from "@/components/SentFriendRequests";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserCheck, UserX, Inbox } from "lucide-react";
 import { z } from "zod";
+import SmallBannerAd from "@/components/SmallBannerAd";
 
 const searchQuerySchema = z.string().trim().min(1, "Search query cannot be empty").max(50, "Search query must be less than 50 characters");
 
@@ -382,6 +383,8 @@ const Friends = () => {
             )}
           </CardContent>
         </Card>
+
+        <SmallBannerAd />
 
         {/* Sent Requests */}
         <SentFriendRequests userId={user.id} />

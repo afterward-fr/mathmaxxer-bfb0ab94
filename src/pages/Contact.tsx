@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Mail, MessageSquare } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import SmallBannerAd from "@/components/SmallBannerAd";
 
 const Contact = () => {
   const navigate = useNavigate();
@@ -144,6 +145,8 @@ const Contact = () => {
             </form>
           </section>
         </div>
+
+        <SmallBannerAd />
       </main>
     </div>
   );

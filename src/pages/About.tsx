@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Brain, Trophy, Users, Zap } from "lucide-react";
+import SmallBannerAd from "@/components/SmallBannerAd";
 
 const About = () => {
   const navigate = useNavigate();
@@ -74,6 +75,8 @@ const About = () => {
               </div>
             </div>
           </div>
+
+          <SmallBannerAd />
 
           <div>
             <h2 className="text-2xl font-semibold mb-4 text-foreground">Our Games</h2>
