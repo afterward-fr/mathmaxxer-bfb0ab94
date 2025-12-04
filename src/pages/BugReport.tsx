@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Bug, Send } from "lucide-react";
 import { z } from "zod";
+import SmallBannerAd from "@/components/SmallBannerAd";
 
 interface BugReport {
   id: string;
@@ -207,6 +208,8 @@ const BugReport = () => {
             </form>
           </CardContent>
         </Card>
+
+        <SmallBannerAd />
 
         <Card style={{ boxShadow: "var(--shadow-game)" }}>
           <CardHeader>
