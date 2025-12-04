@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Brain, Trophy, Users, Zap } from "lucide-react";
+import AdBanner from "@/components/AdBanner";
 
 const About = () => {
   const navigate = useNavigate();
@@ -95,6 +96,9 @@ const About = () => {
               Contact Us
             </Button>
           </div>
+
+          {/* Ad Banner */}
+          <AdBanner />
         </section>
       </main>
     </div>
