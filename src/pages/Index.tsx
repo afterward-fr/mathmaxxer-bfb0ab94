@@ -168,8 +168,6 @@ const Index = () => {
           </CardContent>
         </Card>
 
-        <MediumRectangleAd />
-
         {/* Daily Challenge and Friends */}
         <div className="grid md:grid-cols-2 gap-4">
           <Card style={{ boxShadow: "var(--shadow-game)" }}>
@@ -313,6 +311,8 @@ const Index = () => {
             <p className="text-sm text-muted-foreground">From beginner to master difficulty</p>
           </Card>
         </div>
+
+        <MediumRectangleAd />
       </div>
     </div>
   );
