@@ -5,8 +5,6 @@ console.log("Complete match function loaded")
 
 interface CompleteMatchRequest {
   matchId: string;
-  player1Score: number;
-  player2Score: number;
 }
 
 Deno.serve(async (req) => {
@@ -31,9 +29,9 @@ Deno.serve(async (req) => {
       throw new Error('Unauthorized')
     }
 
-    const { matchId, player1Score, player2Score }: CompleteMatchRequest = await req.json()
+    const { matchId }: CompleteMatchRequest = await req.json()
 
-    console.log('Completing match:', { matchId, player1Score, player2Score, userId: user.id })
+    console.log('Completing match:', { matchId, userId: user.id })
 
     // Get match details
     const { data: match, error: matchError } = await supabaseClient
@@ -55,6 +53,23 @@ Deno.serve(async (req) => {
     if (match.status === 'completed') {
       throw new Error('Match already completed')
     }
+
+    // Calculate scores server-side from match_answers table (prevents score manipulation)
+    const { data: answers, error: answersError } = await supabaseClient
+      .from('match_answers')
+      .select('user_id, is_correct')
+      .eq('match_id', matchId)
+
+    if (answersError) {
+      console.error('Error fetching match answers:', answersError)
+      throw new Error('Failed to fetch match answers')
+    }
+
+    // Calculate actual scores from verified answers
+    const player1Score = answers?.filter(a => a.user_id === match.player1_id && a.is_correct).length || 0
+    const player2Score = answers?.filter(a => a.user_id === match.player2_id && a.is_correct).length || 0
+
+    console.log('Calculated scores:', { player1Score, player2Score })
 
     // Determine winner
     let winnerId: string | null = null
