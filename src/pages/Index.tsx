@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Brain, Trophy, Clock, Zap, LogOut, User, Bug, Users, Award, Star, Sparkles, UserPlus } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import MediumRectangleAd from "@/components/MediumRectangleAd";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -166,6 +167,8 @@ const Index = () => {
             </div>
           </CardContent>
         </Card>
+
+        <MediumRectangleAd />
 
         {/* Daily Challenge and Friends */}
         <div className="grid md:grid-cols-2 gap-4">

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy, Medal, Award, ArrowLeft, Crown, UserPlus } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import MediumRectangleAd from "@/components/MediumRectangleAd";
 
 interface LeaderboardEntry {
   id: string;
@@ -182,8 +183,10 @@ const Leaderboard = () => {
                 const isCurrentUser = entry.id === currentUserId;
                 
                 return (
-                  <div
-                    key={entry.id}
+                  <>
+                    {rank === 11 && <MediumRectangleAd key="ad-after-10" />}
+                    <div
+                      key={entry.id}
                     className={`grid grid-cols-12 gap-2 md:gap-4 p-3 rounded-lg transition-all ${
                       isCurrentUser 
                         ? "bg-primary/20 border-2 border-primary" 
@@ -235,6 +238,7 @@ const Leaderboard = () => {
                       )}
                     </div>
                   </div>
+                  </>
                 );
               })}
 

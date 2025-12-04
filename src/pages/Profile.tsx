@@ -13,6 +13,7 @@ import { useAchievements } from "@/hooks/useAchievements";
 
 import ProfilePictureUpload from "@/components/ProfilePictureUpload";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import MediumRectangleAd from "@/components/MediumRectangleAd";
 
 interface Profile {
   id: string;
@@ -438,6 +439,8 @@ const Profile = () => {
             onUploadSuccess={(url) => setProfile({ ...profile, avatar_url: url })}
           />
         )}
+
+        <MediumRectangleAd />
 
         {/* Tabs for Statistics and History */}
         <Tabs defaultValue="achievements" className="space-y-4">

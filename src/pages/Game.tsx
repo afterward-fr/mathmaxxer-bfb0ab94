@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { Brain, Trophy, Clock } from "lucide-react";
 import { useAchievements } from "@/hooks/useAchievements";
 import { z } from "zod";
+import MediumRectangleAd from "@/components/MediumRectangleAd";
 
 
 interface Question {
@@ -489,6 +490,7 @@ const Game = () => {
               </>
             )}
           </div>
+          <MediumRectangleAd />
           <div className="space-y-3">
             <Button onClick={() => navigate("/")} size="lg" className="w-full">
               Back to Menu
