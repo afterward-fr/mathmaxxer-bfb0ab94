@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Users, Loader2, Trophy, Target } from "lucide-react";
-
+import MediumRectangleAd from "@/components/MediumRectangleAd";
 interface QueueEntry {
   id: string;
   user_id: string;
@@ -345,6 +345,8 @@ const Multiplayer = () => {
             )}
           </CardContent>
         </Card>
+
+        <MediumRectangleAd />
 
         {/* Info Card */}
         <Card className="bg-card/50">
