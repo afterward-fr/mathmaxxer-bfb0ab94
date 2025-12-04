@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Users, Loader2, Trophy, Target } from "lucide-react";
-import AdBanner from "@/components/AdBanner";
 
 interface QueueEntry {
   id: string;
@@ -361,9 +360,6 @@ const Multiplayer = () => {
             </div>
           </CardContent>
         </Card>
-
-        {/* Ad Banner */}
-        <AdBanner />
       </div>
     </div>
   );

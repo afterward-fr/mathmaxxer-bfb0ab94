@@ -9,7 +9,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Bug, Send } from "lucide-react";
 import { z } from "zod";
-import AdBanner from "@/components/AdBanner";
 
 interface BugReport {
   id: string;
@@ -246,9 +245,6 @@ const BugReport = () => {
             )}
           </CardContent>
         </Card>
-
-        {/* Ad Banner */}
-        <AdBanner />
       </div>
     </div>
   );

@@ -10,7 +10,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { format } from "date-fns";
 import AchievementBadge from "@/components/AchievementBadge";
 import { useAchievements } from "@/hooks/useAchievements";
-import AdBanner from "@/components/AdBanner";
+
 import ProfilePictureUpload from "@/components/ProfilePictureUpload";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -682,8 +682,6 @@ const Profile = () => {
           </TabsContent>
         </Tabs>
 
-        {/* Ad Banner */}
-        <AdBanner />
       </div>
     </div>
   );

@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Brain, Trophy, Clock, Zap, LogOut, User, Bug, Users, Award, Star, Sparkles, UserPlus } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import AdBanner from "@/components/AdBanner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const Index = () => {
@@ -311,9 +310,6 @@ const Index = () => {
             <p className="text-sm text-muted-foreground">From beginner to master difficulty</p>
           </Card>
         </div>
-
-        {/* Ad Banner */}
-        <AdBanner />
       </div>
     </div>
   );
