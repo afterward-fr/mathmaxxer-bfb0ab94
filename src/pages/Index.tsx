@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Brain, Trophy, Clock, Zap, LogOut, User, Bug, Users, Award, Star, Sparkles, UserPlus } from "lucide-react";
+import { Brain, Trophy, Clock, Zap, LogOut, User, Bug, Users, Award, Star, Sparkles, UserPlus, Info, Shield, Mail } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import MediumRectangleAd from "@/components/MediumRectangleAd";
@@ -82,9 +83,36 @@ const Index = () => {
               <p className="text-sm text-muted-foreground">Compete. Learn. Dominate.</p>
             </div>
           </div>
-          <Button onClick={handleLogout} variant="outline" size="icon">
-            <LogOut className="w-5 h-5" />
-          </Button>
+          
+          <div className="flex items-center gap-2 md:gap-4">
+            {/* Navigation Links */}
+            <nav className="hidden sm:flex items-center gap-1 md:gap-2">
+              <Link to="/about">
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground gap-1.5">
+                  <Info className="w-4 h-4" />
+                  <span className="hidden md:inline">About</span>
+                </Button>
+              </Link>
+              <Link to="/privacy-policy">
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground gap-1.5">
+                  <Shield className="w-4 h-4" />
+                  <span className="hidden md:inline">Privacy</span>
+                </Button>
+              </Link>
+              <Link to="/contact">
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground gap-1.5">
+                  <Mail className="w-4 h-4" />
+                  <span className="hidden md:inline">Contact</span>
+                </Button>
+              </Link>
+            </nav>
+            
+            <div className="h-6 w-px bg-border hidden sm:block" />
+            
+            <Button onClick={handleLogout} variant="outline" size="icon">
+              <LogOut className="w-5 h-5" />
+            </Button>
+          </div>
         </div>
 
         {/* Profile Stats */}
