@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Mail, MessageSquare } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import AdBanner from "@/components/AdBanner";
 
 const Contact = () => {
   const navigate = useNavigate();
@@ -143,6 +144,11 @@ const Contact = () => {
               </Button>
             </form>
           </section>
+        </div>
+
+        {/* Ad Banner */}
+        <div className="mt-8">
+          <AdBanner />
         </div>
       </main>
     </div>
