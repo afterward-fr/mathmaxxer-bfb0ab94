@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { Brain, Trophy, Clock } from "lucide-react";
 import { useAchievements } from "@/hooks/useAchievements";
 import { z } from "zod";
-import InterstitialAd from "@/components/InterstitialAd";
+
 
 interface Question {
   id: string;
@@ -38,7 +38,6 @@ const Game = () => {
   const [gameEnded, setGameEnded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [gameSessionId, setGameSessionId] = useState<string | null>(null);
-  const [showInterstitialAd, setShowInterstitialAd] = useState(false);
   const [matchResult, setMatchResult] = useState<{
     won: boolean;
     ratingChange: number;
@@ -322,8 +321,6 @@ const Game = () => {
             matches: matches || [],
           });
         }
-
-        setShowInterstitialAd(true);
       } catch (error: any) {
         console.error("Failed to complete match:", error);
         toast({
@@ -403,9 +400,6 @@ const Game = () => {
           });
         }
       }
-      
-      // Show interstitial ad after game completion
-      setShowInterstitialAd(true);
     } catch (error: any) {
       console.error("Failed to complete game:", error);
       toast({
@@ -512,53 +506,45 @@ const Game = () => {
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
 
   return (
-    <>
-      <InterstitialAd 
-        isOpen={showInterstitialAd} 
-        onClose={() => setShowInterstitialAd(false)}
-        autoCloseDelay={5000}
-      />
-      
-      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "var(--gradient-primary)" }}>
-        <Card className="max-w-2xl w-full p-8 space-y-6">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Clock className="w-5 h-5" />
-              <span className="text-xl font-mono">{formatTime(timeLeft)}</span>
-            </div>
-            <div className="text-lg font-semibold">
-              Score: <span className="text-primary">{score}</span>
-            </div>
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "var(--gradient-primary)" }}>
+      <Card className="max-w-2xl w-full p-8 space-y-6">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Clock className="w-5 h-5" />
+            <span className="text-xl font-mono">{formatTime(timeLeft)}</span>
           </div>
-
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm text-muted-foreground">
-              <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
-              <span>{Math.round(progress)}%</span>
-            </div>
-            <Progress value={progress} />
+          <div className="text-lg font-semibold">
+            Score: <span className="text-primary">{score}</span>
           </div>
+        </div>
 
-          <Card className="p-8 text-center" style={{ background: "var(--gradient-game)", boxShadow: "var(--shadow-game)" }}>
-            <p className="text-2xl font-bold">{currentQuestion?.question}</p>
-          </Card>
+        <div className="space-y-2">
+          <div className="flex justify-between text-sm text-muted-foreground">
+            <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
+            <span>{Math.round(progress)}%</span>
+          </div>
+          <Progress value={progress} />
+        </div>
 
-          <form onSubmit={(e) => { e.preventDefault(); submitAnswer(); }} className="space-y-4">
-            <Input
-              type="text"
-              placeholder="Enter your answer..."
-              value={userAnswer}
-              onChange={(e) => setUserAnswer(e.target.value)}
-              className="text-lg text-center"
-              autoFocus
-            />
-            <Button type="submit" size="lg" className="w-full" disabled={!userAnswer.trim()}>
-              Submit Answer
-            </Button>
-          </form>
+        <Card className="p-8 text-center" style={{ background: "var(--gradient-game)", boxShadow: "var(--shadow-game)" }}>
+          <p className="text-2xl font-bold">{currentQuestion?.question}</p>
         </Card>
-      </div>
-    </>
+
+        <form onSubmit={(e) => { e.preventDefault(); submitAnswer(); }} className="space-y-4">
+          <Input
+            type="text"
+            placeholder="Enter your answer..."
+            value={userAnswer}
+            onChange={(e) => setUserAnswer(e.target.value)}
+            className="text-lg text-center"
+            autoFocus
+          />
+          <Button type="submit" size="lg" className="w-full" disabled={!userAnswer.trim()}>
+            Submit Answer
+          </Button>
+        </form>
+      </Card>
+    </div>
   );
 };
 
