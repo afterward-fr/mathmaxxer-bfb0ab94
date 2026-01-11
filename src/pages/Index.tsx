@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Brain, Trophy, Clock, Zap, LogOut, User, Bug, Users, Award, Star, Sparkles, UserPlus, Info, Shield, Mail } from "lucide-react";
+import { Brain, Trophy, Clock, Zap, LogOut, User, Bug, Users, Award, Star, Sparkles, UserPlus, Info, Shield, Mail, Settings } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -109,6 +109,9 @@ const Index = () => {
             
             <div className="h-6 w-px bg-border hidden sm:block" />
             
+            <Button onClick={() => navigate("/settings")} variant="outline" size="icon">
+              <Settings className="w-5 h-5" />
+            </Button>
             <Button onClick={handleLogout} variant="outline" size="icon">
               <LogOut className="w-5 h-5" />
             </Button>
