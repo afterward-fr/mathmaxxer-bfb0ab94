@@ -91,7 +91,7 @@ const PrivacyPolicy = () => {
           <div>
             <h2 className="text-2xl font-semibold mb-3 text-foreground">Contact Us</h2>
             <p>
-              If you have questions about this Privacy Policy, please visit our Contact page or email us at privacy@mathbattle.com
+              If you have questions about this Privacy Policy, please visit our Contact page.
             </p>
           </div>
         </section>

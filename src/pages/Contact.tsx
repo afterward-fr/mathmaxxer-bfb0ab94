@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Mail, MessageSquare } from "lucide-react";
+import { ArrowLeft, MessageSquare } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import SmallBannerAd from "@/components/SmallBannerAd";
@@ -54,14 +54,6 @@ const Contact = () => {
             </p>
 
             <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <Mail className="w-5 h-5 text-primary mt-1" />
-                <div>
-                  <h3 className="font-semibold text-foreground">Email</h3>
-                  <p className="text-muted-foreground">support@mathbattle.com</p>
-                </div>
-              </div>
-
               <div className="flex items-start gap-3">
                 <MessageSquare className="w-5 h-5 text-primary mt-1" />
                 <div>
