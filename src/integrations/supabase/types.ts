@@ -215,6 +215,7 @@ export type Database = {
       }
       game_sessions: {
         Row: {
+          challenge_id: string | null
           completed_at: string | null
           difficulty: string
           id: string
@@ -226,6 +227,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          challenge_id?: string | null
           completed_at?: string | null
           difficulty: string
           id?: string
@@ -237,6 +239,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          challenge_id?: string | null
           completed_at?: string | null
           difficulty?: string
           id?: string
@@ -247,7 +250,15 @@ export type Database = {
           total_questions?: number
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "game_sessions_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "daily_challenges"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       match_answers: {
         Row: {
@@ -555,8 +566,13 @@ export type Database = {
       }
     }
     Functions: {
-      complete_daily_challenge: {
-        Args: { p_challenge_id: string; p_score: number }
+      complete_daily_challenge_internal: {
+        Args: {
+          p_challenge_id: string
+          p_session_id: string
+          p_user_id: string
+          p_verified_score: number
+        }
         Returns: Json
       }
       complete_game: { Args: { p_session_id: string }; Returns: Json }

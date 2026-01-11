@@ -27,8 +27,11 @@ const Game = () => {
   const difficulty = searchParams.get("difficulty") || "beginner";
   const timeControl = (searchParams.get("timeControl") || "5+5").replace(/\s/g, "+");
   const matchId = searchParams.get("matchId");
+  const challengeId = searchParams.get("challengeId");
+  const targetScore = searchParams.get("targetScore");
   const mode = searchParams.get("mode") || "solo";
   const isMultiplayer = mode === "multiplayer";
+  const isDailyChallenge = !!challengeId;
   
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -46,6 +49,11 @@ const Game = () => {
   } | null>(null);
   const [practiceResult, setPracticeResult] = useState<{
     ratingChange: number;
+  } | null>(null);
+  const [challengeResult, setChallengeResult] = useState<{
+    practiceRatingEarned: number;
+    iqRatingEarned: number;
+    score: number;
   } | null>(null);
   const { checkAndAwardAchievements } = useAchievements();
 
@@ -108,15 +116,28 @@ const Game = () => {
 
     // For multiplayer, we don't create a game session, we use the match
     if (!isMultiplayer) {
-      // Create game session for solo games
+      // Create game session for solo games (including daily challenges)
+      const sessionData: {
+        user_id: string;
+        difficulty: string;
+        time_control: string;
+        total_questions: number;
+        challenge_id?: string;
+      } = {
+        user_id: user.id,
+        difficulty,
+        time_control: timeControl,
+        total_questions: totalQuestions,
+      };
+
+      // Link session to daily challenge if applicable
+      if (isDailyChallenge && challengeId) {
+        sessionData.challenge_id = challengeId;
+      }
+
       const { data: session, error } = await supabase
         .from("game_sessions")
-        .insert({
-          user_id: user.id,
-          difficulty,
-          time_control: timeControl,
-          total_questions: totalQuestions,
-        })
+        .insert(sessionData)
         .select()
         .single();
 
@@ -333,7 +354,7 @@ const Game = () => {
       return;
     }
 
-    // Solo game completion
+    // Solo game or daily challenge completion
     if (!gameSessionId) {
       toast({
         variant: "destructive",
@@ -344,28 +365,60 @@ const Game = () => {
     }
 
     try {
-      // Call edge function to complete game with rating changes
-      const { data, error } = await supabase.functions.invoke('complete-solo-game', {
-        body: { sessionId: gameSessionId },
-      });
+      if (isDailyChallenge && challengeId) {
+        // Daily challenge completion - use secure edge function
+        const { data, error } = await supabase.functions.invoke('complete-daily-challenge', {
+          body: { sessionId: gameSessionId, challengeId },
+        });
 
-      if (error) throw error;
+        if (error) throw error;
 
-      // Update local score with server-calculated value
-      setScore(data.score);
-      
-      const pointsChange = data.points_earned;
-      setPracticeResult({
-        ratingChange: pointsChange,
-      });
-      
-      toast({
-        title: "Game Complete!",
-        description: pointsChange >= 0 
-          ? `+${pointsChange} practice points!` 
-          : `${pointsChange} practice points`,
-        variant: pointsChange >= 0 ? "default" : "destructive",
-      });
+        // Check if score met target
+        if (data.error) {
+          // Score didn't meet target - show result
+          toast({
+            variant: "destructive",
+            title: "Challenge Not Completed",
+            description: data.error,
+          });
+          return;
+        }
+
+        setScore(data.score);
+        setChallengeResult({
+          practiceRatingEarned: data.practice_rating_earned,
+          iqRatingEarned: data.iq_rating_earned,
+          score: data.score,
+        });
+
+        toast({
+          title: "Challenge Complete! 🎉",
+          description: `+${data.practice_rating_earned} Practice Rating, +${data.iq_rating_earned} IQ Rating!`,
+        });
+      } else {
+        // Regular solo game - use existing edge function
+        const { data, error } = await supabase.functions.invoke('complete-solo-game', {
+          body: { sessionId: gameSessionId },
+        });
+
+        if (error) throw error;
+
+        // Update local score with server-calculated value
+        setScore(data.score);
+        
+        const pointsChange = data.points_earned;
+        setPracticeResult({
+          ratingChange: pointsChange,
+        });
+        
+        toast({
+          title: "Game Complete!",
+          description: pointsChange >= 0 
+            ? `+${pointsChange} practice points!` 
+            : `${pointsChange} practice points`,
+          variant: pointsChange >= 0 ? "default" : "destructive",
+        });
+      }
 
       // Check for achievements after game completion
       const { data: { user } } = await supabase.auth.getUser();
@@ -406,7 +459,7 @@ const Game = () => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to save game results",
+        description: error.message || "Failed to save game results",
       });
     }
   };
@@ -468,6 +521,19 @@ const Game = () => {
                   <p className="text-muted-foreground">Opponent: {matchResult.opponentScore}/{questions.length}</p>
                   <p className={`font-bold ${matchResult.ratingChange > 0 ? 'text-green-500' : 'text-red-500'}`}>
                     IQ Rating: {matchResult.ratingChange > 0 ? '+' : ''}{matchResult.ratingChange}
+                  </p>
+                </div>
+              </>
+            ) : challengeResult ? (
+              <>
+                <h2 className="text-3xl font-bold mb-2">Challenge Complete! 🎉</h2>
+                <div className="space-y-2 text-lg">
+                  <p>Your Score: <span className="text-primary font-bold">{challengeResult.score}/{questions.length}</span></p>
+                  <p className="font-bold text-green-500">
+                    Practice Rating: +{challengeResult.practiceRatingEarned}
+                  </p>
+                  <p className="font-bold text-green-500">
+                    IQ Rating: +{challengeResult.iqRatingEarned}
                   </p>
                 </div>
               </>
