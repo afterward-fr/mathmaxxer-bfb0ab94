@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3, ArrowLeft, TrendingUp, Target, Clock, Brain, Trophy, Zap } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from "recharts";
+import MediumRectangleAd from "@/components/MediumRectangleAd";
 
 interface AnalyticsData {
   date: string;
@@ -149,6 +150,8 @@ const Analytics = () => {
             <p className="text-muted-foreground">Deep insights into your math journey</p>
           </div>
         </div>
+
+        <MediumRectangleAd />
 
         {/* Overview Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

@@ -11,6 +11,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import SmallBannerAd from "@/components/SmallBannerAd";
 
 interface Clan {
   id: string;
@@ -259,6 +260,7 @@ const Clans = () => {
               <p className="text-muted-foreground">Join forces with other players</p>
             </div>
           </div>
+          <SmallBannerAd />
           {!myClan && (
             <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
               <DialogTrigger asChild>

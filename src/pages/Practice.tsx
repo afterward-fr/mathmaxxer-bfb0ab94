@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { BookOpen, ArrowLeft, Brain, Zap, Clock, Target, Star } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import SmallBannerAd from "@/components/SmallBannerAd";
 
 interface Topic {
   id: string;
@@ -113,6 +114,8 @@ const Practice = () => {
             <p className="text-muted-foreground">Improve your skills with targeted practice</p>
           </div>
         </div>
+
+        <SmallBannerAd />
 
         <Tabs defaultValue="topics" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
