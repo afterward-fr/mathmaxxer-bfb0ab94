@@ -4,11 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Brain, Trophy, Clock, Zap, LogOut, User, Bug, Users, Award, Star, Sparkles, UserPlus, Info, Shield, Mail, Settings } from "lucide-react";
+import { Brain, Trophy, Clock, Zap, LogOut, Bug, Users, Award, Star, Sparkles, UserPlus, Info, Shield, Mail, Settings, Swords, Gift, BarChart3, BookOpen, Target } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import MediumRectangleAd from "@/components/MediumRectangleAd";
+import StreakTracker from "@/components/StreakTracker";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -17,6 +19,9 @@ const Index = () => {
   const [profile, setProfile] = useState<any>(null);
   const [difficulty, setDifficulty] = useState("beginner");
   const [timeControl, setTimeControl] = useState("5+5");
+
+  // Enable keyboard shortcuts
+  useKeyboardShortcuts();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -118,6 +123,9 @@ const Index = () => {
           </div>
         </div>
 
+        {/* Streak Tracker */}
+        <StreakTracker userId={user.id} />
+
         {/* Profile Stats */}
         <Card style={{ boxShadow: "var(--shadow-game)" }}>
           <CardHeader>
@@ -136,9 +144,15 @@ const Index = () => {
                   <CardDescription>Your competitive stats</CardDescription>
                 </div>
               </div>
-              <Button onClick={() => navigate("/profile")} variant="outline" size="sm">
-                View Full Profile
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={() => navigate("/analytics")} variant="outline" size="sm">
+                  <BarChart3 className="w-4 h-4 mr-1" />
+                  Analytics
+                </Button>
+                <Button onClick={() => navigate("/profile")} variant="outline" size="sm">
+                  View Profile
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -175,29 +189,93 @@ const Index = () => {
           </CardContent>
         </Card>
 
-        {/* Multiplayer Setup */}
-        <Card style={{ boxShadow: "var(--shadow-game)" }}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-primary" />
-              Multiplayer
-            </CardTitle>
-            <CardDescription>Compete for competitive IQ rating and climb the leaderboard</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="text-center py-4">
-              <Trophy className="w-16 h-16 mx-auto mb-4 text-primary" />
-              <h3 className="text-xl font-bold mb-2">Challenge Players Worldwide</h3>
-              <p className="text-sm text-muted-foreground mb-6">
-                Compete in real-time matches and earn competitive rating points
-              </p>
+        {/* New Features Row: Tournaments, Clans, Referrals */}
+        <div className="grid md:grid-cols-3 gap-4">
+          <Card className="hover-lift cursor-pointer" style={{ boxShadow: "var(--shadow-card)" }} onClick={() => navigate("/tournaments")}>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Trophy className="w-5 h-5 text-yellow-500" />
+                Weekly Tournaments
+              </CardTitle>
+              <CardDescription>Compete for prizes & glory</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button className="w-full" variant="outline">
+                <Swords className="w-4 h-4 mr-2" />
+                View Tournaments
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover-lift cursor-pointer" style={{ boxShadow: "var(--shadow-card)" }} onClick={() => navigate("/clans")}>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Shield className="w-5 h-5 text-primary" />
+                Clans
+              </CardTitle>
+              <CardDescription>Join forces with others</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button className="w-full" variant="outline">
+                <Users className="w-4 h-4 mr-2" />
+                Browse Clans
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover-lift cursor-pointer" style={{ boxShadow: "var(--shadow-card)" }} onClick={() => navigate("/referrals")}>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Gift className="w-5 h-5 text-pink-500" />
+                Refer Friends
+              </CardTitle>
+              <CardDescription>Earn bonus points</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button className="w-full" variant="outline">
+                <Gift className="w-4 h-4 mr-2" />
+                Get Referral Code
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Game Modes Row */}
+        <div className="grid md:grid-cols-2 gap-4">
+          {/* Multiplayer */}
+          <Card style={{ boxShadow: "var(--shadow-game)" }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-primary" />
+                Multiplayer
+              </CardTitle>
+              <CardDescription>Compete for IQ rating</CardDescription>
+            </CardHeader>
+            <CardContent>
               <Button onClick={() => navigate("/multiplayer")} size="lg" className="w-full">
                 <Users className="w-4 h-4 mr-2" />
-                Play Multiplayer
+                Find Match
               </Button>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          {/* Practice Mode */}
+          <Card style={{ boxShadow: "var(--shadow-game)" }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-primary" />
+                Practice Mode
+              </CardTitle>
+              <CardDescription>Topics, Speed Rounds & Survival</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={() => navigate("/practice")} size="lg" className="w-full">
+                <Target className="w-4 h-4 mr-2" />
+                Choose Practice Mode
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Daily Challenge and Friends */}
         <div className="grid md:grid-cols-2 gap-4">
@@ -234,17 +312,17 @@ const Index = () => {
           </Card>
         </div>
 
-        {/* Solo Game, Leaderboard, and Bug Report */}
-        <div className="grid md:grid-cols-2 gap-4">
-          <Card style={{ boxShadow: "var(--shadow-game)" }}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Brain className="w-5 h-5 text-primary" />
-                Solo Practice
-              </CardTitle>
-              <CardDescription>Practice without affecting competitive rating</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+        {/* Quick Solo Game */}
+        <Card style={{ boxShadow: "var(--shadow-game)" }}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Brain className="w-5 h-5 text-primary" />
+              Quick Solo Game
+            </CardTitle>
+            <CardDescription>Jump right into practice</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Difficulty</label>
                 <Select value={difficulty} onValueChange={setDifficulty}>
@@ -252,12 +330,12 @@ const Index = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="beginner">Beginner (15-8 pts)</SelectItem>
-                    <SelectItem value="elementary">Elementary (18-10 pts)</SelectItem>
-                    <SelectItem value="intermediate">Intermediate (21-10 pts)</SelectItem>
-                    <SelectItem value="advanced">Advanced (24-10 pts)</SelectItem>
-                    <SelectItem value="expert">Expert (27-10 pts)</SelectItem>
-                    <SelectItem value="master">Master (30-10 pts)</SelectItem>
+                    <SelectItem value="beginner">Beginner</SelectItem>
+                    <SelectItem value="elementary">Elementary</SelectItem>
+                    <SelectItem value="intermediate">Intermediate</SelectItem>
+                    <SelectItem value="advanced">Advanced</SelectItem>
+                    <SelectItem value="expert">Expert</SelectItem>
+                    <SelectItem value="master">Master</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -278,70 +356,61 @@ const Index = () => {
                 </Select>
               </div>
               
-              <Button onClick={startGame} className="w-full">
-                <Brain className="w-4 h-4 mr-2" />
-                Start Solo Game
+              <div className="flex items-end">
+                <Button onClick={startGame} className="w-full">
+                  <Zap className="w-4 h-4 mr-2" />
+                  Start Game
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Bottom Row: Leaderboard & Bug Report */}
+        <div className="grid md:grid-cols-2 gap-4">
+          <Card style={{ boxShadow: "var(--shadow-card)" }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Award className="w-5 h-5 text-primary" />
+                Leaderboard
+              </CardTitle>
+              <CardDescription>See top players ranked</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <Button onClick={() => navigate("/leaderboard")} variant="outline" className="w-full">
+                <Trophy className="w-4 h-4 mr-2" />
+                View Rankings
               </Button>
             </CardContent>
           </Card>
 
-          <div className="space-y-4">
-            <Card style={{ boxShadow: "var(--shadow-game)" }}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Award className="w-5 h-5 text-primary" />
-                  Leaderboard
-                </CardTitle>
-                <CardDescription>See top players ranked</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button onClick={() => navigate("/leaderboard")} variant="outline" className="w-full">
-                  <Trophy className="w-4 h-4 mr-2" />
-                  View Rankings
-                </Button>
-                <Button onClick={() => navigate("/friends")} variant="glow" className="w-full">
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  Add Friend
-                </Button>
-              </CardContent>
-            </Card>
+          <Card style={{ boxShadow: "var(--shadow-card)" }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Bug className="w-5 h-5 text-primary" />
+                Bug Report
+              </CardTitle>
+              <CardDescription>Help us improve</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={() => navigate("/bug-report")} variant="outline" className="w-full">
+                <Bug className="w-4 h-4 mr-2" />
+                Report a Bug
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
 
-            <Card style={{ boxShadow: "var(--shadow-game)" }}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Bug className="w-5 h-5 text-primary" />
-                  Bug Report
-                </CardTitle>
-                <CardDescription>Help us improve</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button onClick={() => navigate("/bug-report")} variant="outline" className="w-full">
-                  <Bug className="w-4 h-4 mr-2" />
-                  Report a Bug
-                </Button>
-              </CardContent>
-            </Card>
+        {/* Keyboard Shortcuts Hint */}
+        <Card className="p-4 bg-card/50">
+          <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
+            <span>⌨️ Shortcuts:</span>
+            <span className="flex items-center gap-1"><kbd className="px-1.5 py-0.5 bg-secondary rounded text-xs">Alt+H</kbd> Home</span>
+            <span className="flex items-center gap-1"><kbd className="px-1.5 py-0.5 bg-secondary rounded text-xs">Alt+P</kbd> Practice</span>
+            <span className="flex items-center gap-1"><kbd className="px-1.5 py-0.5 bg-secondary rounded text-xs">Alt+M</kbd> Multiplayer</span>
+            <span className="flex items-center gap-1"><kbd className="px-1.5 py-0.5 bg-secondary rounded text-xs">Alt+T</kbd> Tournaments</span>
           </div>
-        </div>
-
-        {/* Game Modes Info */}
-        <div className="grid md:grid-cols-3 gap-4">
-          <Card className="p-6 text-center bg-card/50">
-            <Zap className="w-10 h-10 mx-auto mb-3 text-primary" />
-            <h3 className="font-bold mb-2">Fast-Paced Action</h3>
-            <p className="text-sm text-muted-foreground">Compete in real-time math battles</p>
-          </Card>
-          <Card className="p-6 text-center bg-card/50">
-            <Trophy className="w-10 h-10 mx-auto mb-3 text-primary" />
-            <h3 className="font-bold mb-2">Earn IQ Points</h3>
-            <p className="text-sm text-muted-foreground">Build your rating with every victory</p>
-          </Card>
-          <Card className="p-6 text-center bg-card/50">
-            <Brain className="w-10 h-10 mx-auto mb-3 text-primary" />
-            <h3 className="font-bold mb-2">Multiple Levels</h3>
-            <p className="text-sm text-muted-foreground">From beginner to master difficulty</p>
-          </Card>
-        </div>
+        </Card>
 
         <MediumRectangleAd />
       </div>
