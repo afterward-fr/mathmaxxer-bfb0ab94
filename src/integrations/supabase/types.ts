@@ -101,6 +101,150 @@ export type Database = {
         }
         Relationships: []
       }
+      claimed_rewards: {
+        Row: {
+          claimed_at: string
+          id: string
+          reward_id: string
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string
+          id?: string
+          reward_id: string
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string
+          id?: string
+          reward_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claimed_rewards_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "daily_rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clan_invites: {
+        Row: {
+          clan_id: string
+          created_at: string
+          id: string
+          invited_by: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          clan_id: string
+          created_at?: string
+          id?: string
+          invited_by: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          clan_id?: string
+          created_at?: string
+          id?: string
+          invited_by?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clan_invites_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clan_members: {
+        Row: {
+          clan_id: string
+          contribution_points: number
+          id: string
+          joined_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          clan_id: string
+          contribution_points?: number
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          clan_id?: string
+          contribution_points?: number
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clan_members_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clans: {
+        Row: {
+          banner_color: string
+          created_at: string
+          description: string | null
+          icon: string
+          id: string
+          is_public: boolean
+          max_members: number
+          member_count: number
+          name: string
+          owner_id: string
+          total_rating: number
+          updated_at: string
+        }
+        Insert: {
+          banner_color?: string
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          is_public?: boolean
+          max_members?: number
+          member_count?: number
+          name: string
+          owner_id: string
+          total_rating?: number
+          updated_at?: string
+        }
+        Update: {
+          banner_color?: string
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          is_public?: boolean
+          max_members?: number
+          member_count?: number
+          name?: string
+          owner_id?: string
+          total_rating?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       daily_challenges: {
         Row: {
           challenge_date: string
@@ -131,6 +275,33 @@ export type Database = {
           reward_practice_rating?: number
           target_score?: number
           time_control?: string
+        }
+        Relationships: []
+      }
+      daily_rewards: {
+        Row: {
+          created_at: string
+          day_number: number
+          description: string
+          id: string
+          reward_type: string
+          reward_value: number
+        }
+        Insert: {
+          created_at?: string
+          day_number: number
+          description: string
+          id?: string
+          reward_type: string
+          reward_value: number
+        }
+        Update: {
+          created_at?: string
+          day_number?: number
+          description?: string
+          id?: string
+          reward_type?: string
+          reward_value?: number
         }
         Relationships: []
       }
@@ -319,6 +490,48 @@ export type Database = {
           },
         ]
       }
+      match_messages: {
+        Row: {
+          created_at: string
+          custom_message: string | null
+          id: string
+          match_id: string
+          quick_chat_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          custom_message?: string | null
+          id?: string
+          match_id: string
+          quick_chat_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          custom_message?: string | null
+          id?: string
+          match_id?: string
+          quick_chat_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_messages_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_messages_quick_chat_id_fkey"
+            columns: ["quick_chat_id"]
+            isOneToOne: false
+            referencedRelation: "quick_chats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matches: {
         Row: {
           completed_at: string | null
@@ -413,6 +626,8 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          bonus_expires_at: string | null
+          bonus_multiplier: number
           created_at: string
           id: string
           iq_rating: number
@@ -425,6 +640,8 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          bonus_expires_at?: string | null
+          bonus_multiplier?: number
           created_at?: string
           id: string
           iq_rating?: number
@@ -437,6 +654,8 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          bonus_expires_at?: string | null
+          bonus_multiplier?: number
           created_at?: string
           id?: string
           iq_rating?: number
@@ -449,6 +668,33 @@ export type Database = {
         }
         Relationships: []
       }
+      question_topics: {
+        Row: {
+          color: string
+          created_at: string
+          description: string | null
+          icon: string
+          id: string
+          name: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       questions: {
         Row: {
           answer: string
@@ -456,6 +702,7 @@ export type Database = {
           difficulty: Database["public"]["Enums"]["difficulty_level"]
           id: string
           question: string
+          topic_id: string | null
         }
         Insert: {
           answer: string
@@ -463,6 +710,7 @@ export type Database = {
           difficulty: Database["public"]["Enums"]["difficulty_level"]
           id?: string
           question: string
+          topic_id?: string | null
         }
         Update: {
           answer?: string
@@ -470,6 +718,184 @@ export type Database = {
           difficulty?: Database["public"]["Enums"]["difficulty_level"]
           id?: string
           question?: string
+          topic_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questions_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "question_topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quick_chats: {
+        Row: {
+          category: string
+          icon: string | null
+          id: string
+          message: string
+          sort_order: number
+        }
+        Insert: {
+          category: string
+          icon?: string | null
+          id?: string
+          message: string
+          sort_order?: number
+        }
+        Update: {
+          category?: string
+          icon?: string | null
+          id?: string
+          message?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          max_uses: number | null
+          reward_per_referral: number
+          user_id: string
+          uses: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          max_uses?: number | null
+          reward_per_referral?: number
+          user_id: string
+          uses?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          max_uses?: number | null
+          reward_per_referral?: number
+          user_id?: string
+          uses?: number
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          created_at: string
+          id: string
+          referral_code_id: string
+          referred_id: string
+          referrer_id: string
+          reward_claimed: boolean
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          referral_code_id: string
+          referred_id: string
+          referrer_id: string
+          reward_claimed?: boolean
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          referral_code_id?: string
+          referred_id?: string
+          referrer_id?: string
+          reward_claimed?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_referral_code_id_fkey"
+            columns: ["referral_code_id"]
+            isOneToOne: false
+            referencedRelation: "referral_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_participants: {
+        Row: {
+          best_time: number | null
+          games_played: number
+          id: string
+          joined_at: string
+          score: number
+          tournament_id: string
+          user_id: string
+        }
+        Insert: {
+          best_time?: number | null
+          games_played?: number
+          id?: string
+          joined_at?: string
+          score?: number
+          tournament_id: string
+          user_id: string
+        }
+        Update: {
+          best_time?: number | null
+          games_played?: number
+          id?: string
+          joined_at?: string
+          score?: number
+          tournament_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_participants_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournaments: {
+        Row: {
+          created_at: string
+          description: string | null
+          difficulty: string
+          end_date: string
+          entry_fee: number
+          id: string
+          max_participants: number | null
+          name: string
+          prize_pool: number
+          start_date: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          difficulty: string
+          end_date: string
+          entry_fee?: number
+          id?: string
+          max_participants?: number | null
+          name: string
+          prize_pool?: number
+          start_date: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          difficulty?: string
+          end_date?: string
+          entry_fee?: number
+          id?: string
+          max_participants?: number | null
+          name?: string
+          prize_pool?: number
+          start_date?: string
+          status?: string
         }
         Relationships: []
       }
@@ -509,6 +935,48 @@ export type Database = {
           },
         ]
       }
+      user_analytics: {
+        Row: {
+          average_time_per_question: number | null
+          best_streak: number
+          correct_answers: number
+          created_at: string
+          date: string
+          difficulty_breakdown: Json | null
+          games_played: number
+          id: string
+          questions_answered: number
+          topics_practiced: string[] | null
+          user_id: string
+        }
+        Insert: {
+          average_time_per_question?: number | null
+          best_streak?: number
+          correct_answers?: number
+          created_at?: string
+          date: string
+          difficulty_breakdown?: Json | null
+          games_played?: number
+          id?: string
+          questions_answered?: number
+          topics_practiced?: string[] | null
+          user_id: string
+        }
+        Update: {
+          average_time_per_question?: number | null
+          best_streak?: number
+          correct_answers?: number
+          created_at?: string
+          date?: string
+          difficulty_breakdown?: Json | null
+          games_played?: number
+          id?: string
+          questions_answered?: number
+          topics_practiced?: string[] | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_challenge_completions: {
         Row: {
           challenge_id: string
@@ -540,6 +1008,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_streaks: {
+        Row: {
+          created_at: string
+          current_streak: number
+          freeze_tokens: number
+          id: string
+          last_login_date: string | null
+          longest_streak: number
+          streak_frozen_until: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_streak?: number
+          freeze_tokens?: number
+          id?: string
+          last_login_date?: string | null
+          longest_streak?: number
+          streak_frozen_until?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_streak?: number
+          freeze_tokens?: number
+          id?: string
+          last_login_date?: string | null
+          longest_streak?: number
+          streak_frozen_until?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
