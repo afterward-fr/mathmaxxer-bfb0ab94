@@ -21,6 +21,11 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import BannerAd from "./components/BannerAd";
+import Tournaments from "./pages/Tournaments";
+import Clans from "./pages/Clans";
+import Referrals from "./pages/Referrals";
+import Analytics from "./pages/Analytics";
+import Practice from "./pages/Practice";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +69,11 @@ const RouteListener = () => {
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/tournaments" element={<Tournaments />} />
+        <Route path="/clans" element={<Clans />} />
+        <Route path="/referrals" element={<Referrals />} />
+        <Route path="/analytics" element={<Analytics />} />
+        <Route path="/practice" element={<Practice />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
