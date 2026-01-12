@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Gift, ArrowLeft, Copy, Users, Star, Check } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import SmallBannerAd from "@/components/SmallBannerAd";
 
 interface ReferralCode {
   id: string;
@@ -256,6 +257,8 @@ const Referrals = () => {
             <p className="text-muted-foreground">Earn rewards for each friend you invite</p>
           </div>
         </div>
+
+        <SmallBannerAd />
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4">

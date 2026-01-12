@@ -8,6 +8,7 @@ import { Trophy, ArrowLeft, Clock, Users, Star, Medal, Crown, Zap } from "lucide
 import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import SmallBannerAd from "@/components/SmallBannerAd";
 
 interface Tournament {
   id: string;
@@ -180,6 +181,8 @@ const Tournaments = () => {
             <p className="text-muted-foreground">Compete for glory and prizes</p>
           </div>
         </div>
+
+        <SmallBannerAd />
 
         {selectedTournament ? (
           // Tournament Details View
