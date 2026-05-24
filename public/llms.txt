@@ -1,0 +1,18 @@
+# Math Maxxer
+
+> Competitive math quiz game with real-time multiplayer battles, tournaments, clans, daily challenges, and a global IQ leaderboard.
+
+Math Maxxer lets players sharpen their math skills by competing head-to-head, joining clans, climbing weekly tournaments, and tracking their progress through detailed analytics. Multiple difficulty tiers (Beginner through Master) and time controls keep matches accessible and challenging.
+
+## Pages
+
+- [Home](/): Overview of game modes, tournaments, clans, and quick play.
+- [About](/about): What Math Maxxer is and how it works.
+- [Leaderboard](/leaderboard): Global rankings by competitive and practice rating.
+- [Tournaments](/tournaments): Weekly tournaments with prize pools.
+- [Clans](/clans): Team-based clans and clan rankings.
+- [Practice](/practice): Topic-based practice and alternate game modes.
+- [Daily Challenge](/daily-challenge): Daily target-score challenge with rewards.
+- [Multiplayer](/multiplayer): Real-time 1v1 matchmaking.
+- [Contact](/contact): How to reach the team.
+- [Privacy Policy](/privacy-policy): How user data is handled.
