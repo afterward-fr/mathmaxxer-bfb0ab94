@@ -26,6 +26,7 @@ import Clans from "./pages/Clans";
 import Referrals from "./pages/Referrals";
 import Analytics from "./pages/Analytics";
 import Practice from "./pages/Practice";
+import RouteMeta from "./components/RouteMeta";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +54,7 @@ const RouteListener = () => {
 
   return (
     <>
+      <RouteMeta />
       {showBannerAd && <BannerAd />}
       <Routes>
         <Route path="/" element={<Index />} />

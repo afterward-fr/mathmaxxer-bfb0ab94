@@ -78,16 +78,17 @@ const Index = () => {
 
   return (
     <div className="min-h-screen p-4 md:p-8" style={{ background: "var(--gradient-primary)" }}>
-      <div className="max-w-6xl mx-auto space-y-6">
+      <main className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex justify-between items-center">
+        <header className="flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="Math Maxxer" className="w-12 h-12" />
+            <img src="/logo.png" alt="Math Maxxer" className="w-12 h-12" width={48} height={48} fetchPriority="high" />
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold">Math Maxxer</h1>
-              <p className="text-sm text-muted-foreground">Compete. Learn. Dominate.</p>
+              <h1 className="text-2xl md:text-3xl font-bold">Math Maxxer — Compete. Learn. Dominate.</h1>
+              <p className="text-sm text-muted-foreground">Real-time competitive math battles</p>
             </div>
           </div>
+          
           
           <div className="flex items-center gap-2 md:gap-4">
             {/* Navigation Links */}
@@ -114,14 +115,14 @@ const Index = () => {
             
             <div className="h-6 w-px bg-border hidden sm:block" />
             
-            <Button onClick={() => navigate("/settings")} variant="outline" size="icon">
+            <Button onClick={() => navigate("/settings")} variant="outline" size="icon" aria-label="Open settings">
               <Settings className="w-5 h-5" />
             </Button>
-            <Button onClick={handleLogout} variant="outline" size="icon">
+            <Button onClick={handleLogout} variant="outline" size="icon" aria-label="Log out">
               <LogOut className="w-5 h-5" />
             </Button>
           </div>
-        </div>
+        </header>
 
         {/* Streak Tracker */}
         <StreakTracker userId={user.id} />
@@ -324,9 +325,9 @@ const Index = () => {
           <CardContent>
             <div className="grid md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Difficulty</label>
+                <label htmlFor="quick-difficulty" className="text-sm font-medium">Difficulty</label>
                 <Select value={difficulty} onValueChange={setDifficulty}>
-                  <SelectTrigger>
+                  <SelectTrigger id="quick-difficulty" aria-label="Difficulty">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -341,9 +342,9 @@ const Index = () => {
               </div>
               
               <div className="space-y-2">
-                <label className="text-sm font-medium">Time Control</label>
+                <label htmlFor="quick-time-control" className="text-sm font-medium">Time Control</label>
                 <Select value={timeControl} onValueChange={setTimeControl}>
-                  <SelectTrigger>
+                  <SelectTrigger id="quick-time-control" aria-label="Time control">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -413,7 +414,7 @@ const Index = () => {
         </Card>
 
         <MediumRectangleAd />
-      </div>
+      </main>
     </div>
   );
 };
