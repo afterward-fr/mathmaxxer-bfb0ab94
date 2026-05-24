@@ -11,7 +11,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import MediumRectangleAd from "@/components/MediumRectangleAd";
 import StreakTracker from "@/components/StreakTracker";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
-import SEO from "@/components/SEO";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -79,11 +78,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen p-4 md:p-8" style={{ background: "var(--gradient-primary)" }}>
-      <SEO
-        title="Math Maxxer — Compete. Learn. Dominate."
-        description="Real-time competitive math battles. Earn IQ points, join clans, win tournaments, and climb the global leaderboard."
-        path="/"
-      />
       <main className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <header className="flex justify-between items-center">
