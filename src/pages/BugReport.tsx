@@ -167,8 +167,9 @@ const BugReport = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Title</label>
+                <label htmlFor="bug-title" className="text-sm font-medium">Title</label>
                 <Input
+                  id="bug-title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Brief description of the bug"
@@ -177,8 +178,9 @@ const BugReport = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Description</label>
+                <label htmlFor="bug-description" className="text-sm font-medium">Description</label>
                 <Textarea
+                  id="bug-description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Detailed description of the issue, steps to reproduce, etc."
@@ -188,9 +190,9 @@ const BugReport = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Priority</label>
+                <label htmlFor="bug-priority" className="text-sm font-medium">Priority</label>
                 <Select value={priority} onValueChange={setPriority}>
-                  <SelectTrigger>
+                  <SelectTrigger id="bug-priority" aria-label="Priority">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
